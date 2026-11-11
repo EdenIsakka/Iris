@@ -49,3 +49,9 @@ pnpm dev
 | `pnpm lint`      | Biome (lint + formato)             |
 | `pnpm typecheck` | TypeScript en todos los workspaces |
 | `pnpm test`      | Pruebas                            |
+
+Los tests contra Postgres (`*.db.test.ts`) se saltan si no hay `DATABASE_URL`. Para incluirlos con la base levantada:
+
+```bash
+DATABASE_URL=postgres://finanzas:finanzas@localhost:5433/finanzas pnpm test
+```

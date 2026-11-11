@@ -8,6 +8,10 @@ export default function RootLayout() {
     <QueryClientProvider client={queryClient}>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen
+          name="transactions/new"
+          options={{ presentation: 'modal', headerShown: true, title: 'Nuevo movimiento' }}
+        />
+        <Stack.Screen
           name="goals/[id]/contribute"
           options={{ presentation: 'modal', headerShown: true, title: 'Aportar a la meta' }}
         />

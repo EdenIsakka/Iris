@@ -1,0 +1,9 @@
+import { z } from 'zod';
+import { transactionKind } from './transaction';
+
+export const createCategorySchema = z.object({
+  name: z.string().trim().min(1, 'Escribe un nombre').max(40),
+  kind: transactionKind,
+});
+
+export type CreateCategoryInput = z.infer<typeof createCategorySchema>;

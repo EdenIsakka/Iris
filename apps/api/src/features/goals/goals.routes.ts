@@ -1,0 +1,26 @@
+import { contributeToGoalSchema, createGoalSchema } from '@finanzas/shared';
+import { zValidator } from '@hono/zod-validator';
+import { Hono } from 'hono';
+import { HTTPException } from 'hono/http-exception';
+import { serializeMoney } from '../../lib/serialize';
+import type { AppEnv } from '../../lib/types';
+import { goalsService } from './goals.service';
+
+export const goalsRoutes = new Hono<AppEnv>()
+  .get('/', async (c) => {
+    const rows = await goalsService(c.var.db).list(c.var.userId);
+    return c.json(rows.map(serializeMoney));
+  })
+  .post('/', zValidator('json', createGoalSchema), async (c) => {
+    const row = await goalsService(c.var.db).create(c.var.userId, c.req.valid('json'));
+    return c.json(row ? serializeMoney(row) : null, 201);
+  })
+  .post('/:id/contributions', zValidator('json', contributeToGoalSchema), async (c) => {
+    const row = await goalsService(c.var.db).contribute(
+      c.var.userId,
+      c.req.param('id'),
+      c.req.valid('json').amountMinor,
+    );
+    if (!row) throw new HTTPException(404, { message: 'Meta no encontrada' });
+    return c.json(serializeMoney(row), 201);
+  });

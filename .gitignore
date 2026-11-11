@@ -1,0 +1,12 @@
+node_modules
+dist
+.turbo
+.expo
+web-build
+*.log
+.env
+.env.*
+!.env.example
+coverage
+.DS_Store
+expo-env.d.ts

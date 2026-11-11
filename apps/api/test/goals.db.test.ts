@@ -57,4 +57,23 @@ describe.skipIf(!url)('POST /v1/goals/:id/contributions contra Postgres', () => 
   it('rechaza un monto de 0', async () => {
     expect((await contribute(own, '0')).status).toBe(400);
   });
+
+  const createGoal = (name: string) =>
+    app.request('/v1/goals', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ name, targetMinor: '500000' }),
+    });
+
+  it('crea una meta para el usuario con el nombre recortado', async () => {
+    const res = await createGoal('  Viaje  ');
+    expect(res.status).toBe(201);
+    const goal = (await res.json()) as { id: string; name: string; targetMinor: string };
+    goalIds.push(goal.id);
+    expect(goal).toMatchObject({ name: 'Viaje', targetMinor: '500000' });
+  });
+
+  it('rechaza un nombre vacío', async () => {
+    expect((await createGoal('   ')).status).toBe(400);
+  });
 });

@@ -1,6 +1,7 @@
-import { createGoalSchema, formatMoney } from '@finanzas/shared';
+import { createGoalSchema } from '@finanzas/shared';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { AmountInput } from '@/components/ui/amount-input';
 import { useCreateGoal } from '../api';
 
 type Props = { onSaved: () => void };
@@ -38,20 +39,11 @@ export function GoalForm({ onSaved }: Props) {
         autoFocus
       />
 
-      <Text style={styles.label} nativeID="goal-target-label">
-        ¿Cuánto quieres ahorrar? (COP)
-      </Text>
-      <TextInput
-        style={styles.input}
+      <AmountInput
+        label="¿Cuánto quieres ahorrar? (COP)"
         value={target}
-        onChangeText={(t) => setTarget(t.replace(/\D/g, '').replace(/^0+/, ''))}
-        keyboardType="number-pad"
-        maxLength={18}
-        placeholder="0"
-        accessibilityLabel="Monto de la meta en COP"
-        accessibilityLabelledBy="goal-target-label"
+        onChangeValue={setTarget}
       />
-      {target ? <Text style={styles.hint}>{formatMoney(BigInt(target))}</Text> : null}
 
       {error || createGoal.error ? (
         <Text style={styles.error} accessibilityRole="alert">
@@ -76,7 +68,6 @@ const styles = StyleSheet.create({
   form: { padding: 16, gap: 8 },
   label: { fontWeight: '600', marginTop: 8 },
   input: { borderWidth: 1, borderColor: '#999', borderRadius: 8, padding: 12, fontSize: 18 },
-  hint: { color: '#555' },
   error: { color: '#b00020' },
   button: {
     marginTop: 16,

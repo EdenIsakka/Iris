@@ -17,7 +17,7 @@ export function transactionsService(db: Db) {
         .limit(limit);
     },
 
-    /** Devuelve null si la billetera o la categoría no existen o son de otro usuario. */
+    /** Devuelve null si la billetera o la categoría no existen, son de otro usuario o la categoría es de otro tipo. */
     async create(userId: string, input: CreateTransactionInput) {
       const [wallet] = await db
         .select({ id: wallets.id })
@@ -28,7 +28,13 @@ export function transactionsService(db: Db) {
         const [category] = await db
           .select({ id: categories.id })
           .from(categories)
-          .where(and(eq(categories.id, input.categoryId), eq(categories.userId, userId)));
+          .where(
+            and(
+              eq(categories.id, input.categoryId),
+              eq(categories.userId, userId),
+              eq(categories.kind, input.kind),
+            ),
+          );
         if (!category) return null;
       }
       const [row] = await db
@@ -75,10 +81,13 @@ export function transactionsService(db: Db) {
       return { incomeMinor: sumOf('income'), expenseMinor: sumOf('expense'), byCategory };
     },
 
-    remove(userId: string, id: string) {
-      return db
+    /** Devuelve false si no existe o es de otro usuario. */
+    async remove(userId: string, id: string) {
+      const rows = await db
         .delete(transactions)
-        .where(and(eq(transactions.id, id), eq(transactions.userId, userId)));
+        .where(and(eq(transactions.id, id), eq(transactions.userId, userId)))
+        .returning({ id: transactions.id });
+      return rows.length > 0;
     },
   };
 }

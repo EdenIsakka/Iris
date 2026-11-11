@@ -67,6 +67,27 @@ describe.skipIf(!url)('Datos por usuario contra Postgres', () => {
     expect((await post(crypto.randomUUID(), null)).status).toBe(404);
   });
 
+  it('rechaza un gasto con una categoría de ingreso', async () => {
+    const [income] = await db
+      .insert(categories)
+      .values({ userId: 'demo-user', name: 'Test ingreso', kind: 'income' })
+      .returning();
+    if (!income) throw new Error('seed falló');
+    categoryIds.push(income.id);
+    expect((await post(own.wallet, income.id)).status).toBe(404);
+  });
+
+  it('borra un movimiento propio una sola vez', async () => {
+    const { id } = (await (await post(own.wallet, null)).json()) as { id: string };
+    const del = () => app.request(`/v1/transactions/${id}`, { method: 'DELETE' });
+    expect((await del()).status).toBe(204);
+    expect((await del()).status).toBe(404);
+  });
+
+  it('responde 400 si el id no es un UUID', async () => {
+    expect((await app.request('/v1/transactions/abc', { method: 'DELETE' })).status).toBe(400);
+  });
+
   const postCategory = (body: unknown) =>
     app.request('/v1/categories', {
       method: 'POST',

@@ -1,4 +1,4 @@
-import { createTransactionSchema } from '@finanzas/shared';
+import { createTransactionSchema, idParamSchema } from '@finanzas/shared';
 import { zValidator } from '@hono/zod-validator';
 import { Hono } from 'hono';
 import { HTTPException } from 'hono/http-exception';
@@ -20,7 +20,11 @@ export const transactionsRoutes = new Hono<AppEnv>()
     if (!row) throw new HTTPException(404, { message: 'Billetera o categoría no encontrada' });
     return c.json(serializeMoney(row), 201);
   })
-  .delete('/:id', async (c) => {
-    await transactionsService(c.var.db).remove(c.var.userId, c.req.param('id'));
+  .delete('/:id', zValidator('param', idParamSchema), async (c) => {
+    const removed = await transactionsService(c.var.db).remove(
+      c.var.userId,
+      c.req.valid('param').id,
+    );
+    if (!removed) throw new HTTPException(404, { message: 'Movimiento no encontrado' });
     return c.body(null, 204);
   });

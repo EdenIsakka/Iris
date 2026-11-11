@@ -1,6 +1,7 @@
 import { contributeToGoalSchema, formatMoney } from '@finanzas/shared';
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { AmountInput } from '@/components/ui/amount-input';
 import { useContribute, useGoals } from '../api';
 
 type Props = { goalId: string; onSaved: () => void };
@@ -36,21 +37,12 @@ export function ContributionForm({ goalId, onSaved }: Props) {
         {missing > 0n ? `Te faltan ${formatMoney(missing)}.` : '¡Ya cumpliste la meta!'}
       </Text>
 
-      <Text style={styles.label} nativeID="contribution-label">
-        ¿Cuánto vas a aportar? (COP)
-      </Text>
-      <TextInput
-        style={styles.input}
+      <AmountInput
+        label="¿Cuánto vas a aportar? (COP)"
         value={amount}
-        onChangeText={(t) => setAmount(t.replace(/\D/g, '').replace(/^0+/, ''))}
-        keyboardType="number-pad"
-        maxLength={18}
-        placeholder="0"
-        accessibilityLabel="Monto del aporte en COP"
-        accessibilityLabelledBy="contribution-label"
+        onChangeValue={setAmount}
         autoFocus
       />
-      {amount ? <Text style={styles.hint}>{formatMoney(BigInt(amount))}</Text> : null}
 
       {error || contribute.error ? (
         <Text style={styles.error} accessibilityRole="alert">
@@ -75,9 +67,6 @@ const styles = StyleSheet.create({
   pad: { padding: 16 },
   form: { padding: 16, gap: 8 },
   title: { fontSize: 20, fontWeight: '700' },
-  label: { fontWeight: '600', marginTop: 8 },
-  input: { borderWidth: 1, borderColor: '#999', borderRadius: 8, padding: 12, fontSize: 18 },
-  hint: { color: '#555' },
   error: { color: '#b00020' },
   button: {
     marginTop: 16,

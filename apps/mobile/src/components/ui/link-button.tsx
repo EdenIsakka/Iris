@@ -1,11 +1,11 @@
-import { Link } from 'expo-router';
+import { type Href, Link } from 'expo-router';
 import { Pressable, StyleSheet, Text } from 'react-native';
 
-export function AddGoalButton() {
+export function LinkButton({ href, label }: { href: Href; label: string }) {
   return (
-    <Link href="/goals/new" asChild>
+    <Link href={href} asChild>
       <Pressable style={styles.button} accessibilityRole="button">
-        <Text style={styles.text}>+ Nueva meta</Text>
+        <Text style={styles.text}>{label}</Text>
       </Pressable>
     </Link>
   );

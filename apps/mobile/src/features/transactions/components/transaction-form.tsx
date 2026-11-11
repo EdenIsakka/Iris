@@ -1,6 +1,7 @@
-import { createTransactionSchema, formatMoney } from '@finanzas/shared';
+import { createTransactionSchema } from '@finanzas/shared';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { AmountInput } from '@/components/ui/amount-input';
 import { useCategories, useCreateCategory, useCreateTransaction, useWallets } from '../api';
 
 type Kind = 'expense' | 'income';
@@ -83,19 +84,7 @@ export function TransactionForm({ onSaved }: Props) {
         />
       </View>
 
-      <Text style={styles.label} nativeID="amount-label">
-        Monto (COP)
-      </Text>
-      <TextInput
-        style={styles.input}
-        value={amount}
-        onChangeText={(t) => setAmount(t.replace(/\D/g, ''))}
-        keyboardType="number-pad"
-        placeholder="0"
-        accessibilityLabelledBy="amount-label"
-        autoFocus
-      />
-      {amount ? <Text style={styles.hint}>{formatMoney(BigInt(amount))}</Text> : null}
+      <AmountInput label="Monto (COP)" value={amount} onChangeValue={setAmount} autoFocus />
 
       {wallets.data.length > 1 ? (
         <>
@@ -207,7 +196,6 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   label: { fontWeight: '600', marginTop: 8 },
   input: { borderWidth: 1, borderColor: '#999', borderRadius: 8, padding: 12, fontSize: 18 },
-  hint: { color: '#555' },
   newCategory: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   newCategoryInput: { flex: 1, fontSize: 16 },
   error: { color: '#b00020' },

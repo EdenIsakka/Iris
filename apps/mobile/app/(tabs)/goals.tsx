@@ -1,11 +1,11 @@
+import { LinkButton } from '@/components/ui/link-button';
 import { Screen } from '@/components/ui/screen';
-import { AddGoalButton } from '@/features/goals/components/add-goal-button';
 import { GoalList } from '@/features/goals/components/goal-list';
 
 export default function GoalsScreen() {
   return (
     <Screen title="Metas">
-      <AddGoalButton />
+      <LinkButton href="/goals/new" label="+ Nueva meta" />
       <GoalList />
     </Screen>
   );

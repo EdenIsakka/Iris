@@ -21,7 +21,7 @@ export function GoalList() {
           <View style={{ paddingVertical: 8, gap: 4 }}>
             <Text style={{ fontWeight: '600' }}>{item.name}</Text>
             <Text>
-              {formatMoney(saved, 'COP')} de {formatMoney(target, 'COP')} ({pct}%)
+              {formatMoney(saved)} de {formatMoney(target)} ({pct}%)
             </Text>
           </View>
         );

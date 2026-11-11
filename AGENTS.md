@@ -17,7 +17,7 @@ Gestor de finanzas personales mobile-first. Monorepo pnpm + Turborepo.
 2. Arquitectura por features (`docs/adr/0005`). Rutas en `app/` delgadas; lógica en `src/features`.
 3. Validación: todo input de la API pasa por un esquema de `@finanzas/shared`.
 4. Toda consulta filtra por `userId`.
-5. Antes de terminar: `pnpm lint && pnpm typecheck && pnpm test`.
+5. Antes de terminar: `pnpm lint && pnpm typecheck && pnpm test`. Los tests `*.db.test.ts` se saltan sin `DATABASE_URL`; con la base levantada, córrelos con `DATABASE_URL=postgres://finanzas:finanzas@localhost:5433/finanzas pnpm test`. Si un test se corta a mitad, `pnpm db:seed` limpia los datos que dejó.
 6. Commits con Conventional Commits; una decisión de arquitectura nueva = un ADR nuevo en `docs/adr`.
 
 ## Pendiente

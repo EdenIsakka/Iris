@@ -6,7 +6,12 @@ import { queryClient } from '@/lib/query-client';
 export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Stack screenOptions={{ headerShown: false }} />
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen
+          name="transactions/new"
+          options={{ presentation: 'modal', headerShown: true, title: 'Nuevo movimiento' }}
+        />
+      </Stack>
       <StatusBar style="auto" />
     </QueryClientProvider>
   );

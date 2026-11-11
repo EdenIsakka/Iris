@@ -1,5 +1,5 @@
 import { createDb, goals } from '@finanzas/db';
-import { inArray } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createApp } from '../src/app';
 
@@ -48,6 +48,22 @@ describe.skipIf(!url)('POST /v1/goals/:id/contributions contra Postgres', () => 
       savedMinor: string;
     }[];
     expect(list.find((g) => g.id === own)?.savedMinor).toBe('2500');
+  });
+
+  it('marca la meta como cumplida al llegar al 100 %', async () => {
+    const [g] = await db
+      .insert(goals)
+      .values({ userId: 'demo-user', name: 'Corta', targetMinor: 3000n })
+      .returning();
+    if (!g) throw new Error('seed falló');
+    goalIds.push(g.id);
+    const status = async () =>
+      (await db.select({ s: goals.status }).from(goals).where(eq(goals.id, g.id)))[0]?.s;
+
+    await contribute(g.id, '2000');
+    expect(await status()).toBe('active');
+    await contribute(g.id, '1000');
+    expect(await status()).toBe('completed');
   });
 
   it('rechaza la meta de otro usuario', async () => {

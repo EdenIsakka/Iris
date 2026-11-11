@@ -15,6 +15,18 @@ export function useTransactions() {
   });
 }
 
+// Cuelga de transactionKeys.all para que crear un movimiento también refresque el resumen.
+export function useMonthSummary() {
+  return useQuery({
+    queryKey: [...transactionKeys.all, 'summary'],
+    queryFn: async () => {
+      const res = await api.v1.transactions.summary.$get();
+      if (!res.ok) throw new Error('No se pudo cargar el resumen');
+      return res.json();
+    },
+  });
+}
+
 export function useCreateTransaction() {
   const queryClient = useQueryClient();
   return useMutation({

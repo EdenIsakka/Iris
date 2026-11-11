@@ -1,4 +1,4 @@
-import { categories, createDb, wallets } from '@finanzas/db';
+import { categories, createDb, transactions, wallets } from '@finanzas/db';
 import { inArray } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createApp } from '../src/app';
@@ -104,5 +104,47 @@ describe.skipIf(!url)('Datos por usuario contra Postgres', () => {
     const ids = ((await (await app.request(path)).json()) as { id: string }[]).map((r) => r.id);
     expect(ids).toContain(ownId());
     expect(ids).not.toContain(otherId());
+  });
+
+  it('resume solo el mes en curso, con gastos por categoría', async () => {
+    type Summary = {
+      incomeMinor: string;
+      expenseMinor: string;
+      byCategory: { name: string | null; amountMinor: string }[];
+    };
+    const summary = async () =>
+      (await (await app.request('/v1/transactions/summary')).json()) as Summary;
+    const name = `Resumen ${crypto.randomUUID().slice(0, 8)}`;
+    const [cat] = await db
+      .insert(categories)
+      .values({ userId: 'demo-user', name, kind: 'expense' })
+      .returning();
+    if (!cat) throw new Error('seed falló');
+    categoryIds.push(cat.id);
+    const before = await summary();
+
+    const tx = (kind: 'income' | 'expense', amountMinor: bigint, occurredAt: Date) => ({
+      userId: 'demo-user',
+      walletId: own.wallet,
+      categoryId: kind === 'expense' ? cat.id : null,
+      kind,
+      amountMinor,
+      occurredAt,
+    });
+    const now = new Date();
+    const lastMonth = new Date(now.getTime() - 45 * 86_400_000);
+    await db
+      .insert(transactions)
+      .values([
+        tx('expense', 700n, now),
+        tx('expense', 300n, now),
+        tx('income', 5000n, now),
+        tx('expense', 9999n, lastMonth),
+      ]);
+
+    const after = await summary();
+    expect(BigInt(after.expenseMinor) - BigInt(before.expenseMinor)).toBe(1000n);
+    expect(BigInt(after.incomeMinor) - BigInt(before.incomeMinor)).toBe(5000n);
+    expect(after.byCategory.find((c) => c.name === name)?.amountMinor).toBe('1000');
   });
 });

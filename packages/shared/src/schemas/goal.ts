@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { amountMinor } from './transaction';
 
 export const createGoalSchema = z.object({
-  name: z.string().min(1).max(80),
+  name: z.string().trim().min(1, 'Escribe un nombre').max(80),
   targetMinor: amountMinor,
   deadline: z.iso.date().optional(),
 });

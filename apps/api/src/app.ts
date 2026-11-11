@@ -3,9 +3,11 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { secureHeaders } from 'hono/secure-headers';
+import { categoriesRoutes } from './features/categories/categories.routes';
 import { goalsRoutes } from './features/goals/goals.routes';
 import { healthRoutes } from './features/health/health.routes';
 import { transactionsRoutes } from './features/transactions/transactions.routes';
+import { walletsRoutes } from './features/wallets/wallets.routes';
 import type { AppEnv } from './lib/types';
 import { currentUser } from './middleware/current-user';
 import { errorHandler } from './middleware/error-handler';
@@ -25,7 +27,9 @@ export function createApp({ db, corsOrigin }: Deps) {
     .route('/health', healthRoutes)
     .use('/v1/*', currentUser)
     .route('/v1/transactions', transactionsRoutes)
-    .route('/v1/goals', goalsRoutes);
+    .route('/v1/goals', goalsRoutes)
+    .route('/v1/wallets', walletsRoutes)
+    .route('/v1/categories', categoriesRoutes);
 
   app.onError(errorHandler);
   return app;

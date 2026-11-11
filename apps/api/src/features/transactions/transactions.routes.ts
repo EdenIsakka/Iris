@@ -1,6 +1,7 @@
 import { createTransactionSchema } from '@finanzas/shared';
 import { zValidator } from '@hono/zod-validator';
 import { Hono } from 'hono';
+import { HTTPException } from 'hono/http-exception';
 import { serializeMoney } from '../../lib/serialize';
 import type { AppEnv } from '../../lib/types';
 import { transactionsService } from './transactions.service';
@@ -12,7 +13,8 @@ export const transactionsRoutes = new Hono<AppEnv>()
   })
   .post('/', zValidator('json', createTransactionSchema), async (c) => {
     const row = await transactionsService(c.var.db).create(c.var.userId, c.req.valid('json'));
-    return c.json(row ? serializeMoney(row) : null, 201);
+    if (!row) throw new HTTPException(404, { message: 'Billetera o categoría no encontrada' });
+    return c.json(serializeMoney(row), 201);
   })
   .delete('/:id', async (c) => {
     await transactionsService(c.var.db).remove(c.var.userId, c.req.param('id'));

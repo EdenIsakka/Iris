@@ -1,4 +1,4 @@
-import { type Db, transactions } from '@finanzas/db';
+import { categories, type Db, transactions, wallets } from '@finanzas/db';
 import type { CreateTransactionInput } from '@finanzas/shared';
 import { and, desc, eq } from 'drizzle-orm';
 
@@ -14,7 +14,20 @@ export function transactionsService(db: Db) {
         .limit(limit);
     },
 
+    /** Devuelve null si la billetera o la categoría no existen o son de otro usuario. */
     async create(userId: string, input: CreateTransactionInput) {
+      const [wallet] = await db
+        .select({ id: wallets.id })
+        .from(wallets)
+        .where(and(eq(wallets.id, input.walletId), eq(wallets.userId, userId)));
+      if (!wallet) return null;
+      if (input.categoryId) {
+        const [category] = await db
+          .select({ id: categories.id })
+          .from(categories)
+          .where(and(eq(categories.id, input.categoryId), eq(categories.userId, userId)));
+        if (!category) return null;
+      }
       const [row] = await db
         .insert(transactions)
         .values({

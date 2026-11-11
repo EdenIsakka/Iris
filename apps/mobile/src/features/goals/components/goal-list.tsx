@@ -29,7 +29,9 @@ export function GoalList() {
               <Text>
                 {formatMoney(saved)} de {formatMoney(target)} ({pct}%)
               </Text>
-              <Text style={{ color: '#1b5e20', fontWeight: '600' }}>+ Aportar</Text>
+              <Text style={{ color: '#1b5e20', fontWeight: '600' }}>
+                {item.status === 'completed' ? '✓ Meta cumplida · + Aportar' : '+ Aportar'}
+              </Text>
             </Pressable>
           </Link>
         );

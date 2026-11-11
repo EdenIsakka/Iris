@@ -1,21 +1,16 @@
 /**
  * Dinero siempre como entero en la unidad mínima de la moneda (ADR-0004).
- * COP tiene 0 decimales en la práctica, así que 1 unidad mínima = 1 peso.
+ * El MVP maneja solo COP, que no usa decimales: 1 unidad mínima = 1 peso.
  */
-export const CURRENCIES = ['COP', 'USD'] as const;
-export type Currency = (typeof CURRENCIES)[number];
+export const CURRENCIES = ['COP'] as const;
 
-const MINOR_DIGITS: Record<Currency, number> = { COP: 0, USD: 2 };
+const cop = new Intl.NumberFormat('es-CO', {
+  style: 'currency',
+  currency: 'COP',
+  maximumFractionDigits: 0,
+});
 
-export function toMinor(amount: number, currency: Currency): bigint {
-  return BigInt(Math.round(amount * 10 ** MINOR_DIGITS[currency]));
-}
-
-export function formatMoney(minor: bigint, currency: Currency, locale = 'es-CO'): string {
-  const value = Number(minor) / 10 ** MINOR_DIGITS[currency];
-  return new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency,
-    maximumFractionDigits: MINOR_DIGITS[currency],
-  }).format(value);
+export function formatMoney(minor: bigint): string {
+  // shortcut: Number() pierde precisión sobre ~9e15 pesos; se usa porque Hermes no garantiza Intl con bigint.
+  return cop.format(Number(minor));
 }

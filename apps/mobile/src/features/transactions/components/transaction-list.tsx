@@ -18,7 +18,7 @@ export function TransactionList() {
           <Text>{item.note ?? (item.kind === 'income' ? 'Ingreso' : 'Gasto')}</Text>
           <Text>
             {item.kind === 'expense' ? '−' : '+'}
-            {formatMoney(BigInt(item.amountMinor), 'COP')}
+            {formatMoney(BigInt(item.amountMinor))}
           </Text>
         </View>
       )}

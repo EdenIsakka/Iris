@@ -11,6 +11,10 @@ export default function RootLayout() {
           name="transactions/new"
           options={{ presentation: 'modal', headerShown: true, title: 'Nuevo movimiento' }}
         />
+        <Stack.Screen
+          name="goals/[id]/contribute"
+          options={{ presentation: 'modal', headerShown: true, title: 'Aportar a la meta' }}
+        />
       </Stack>
       <StatusBar style="auto" />
     </QueryClientProvider>

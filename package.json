@@ -15,12 +15,10 @@
     "db:up": "docker compose up -d db",
     "db:generate": "pnpm --filter @finanzas/db generate",
     "db:migrate": "pnpm --filter @finanzas/db migrate",
-    "db:seed": "pnpm --filter @finanzas/db seed",
-    "changeset": "changeset"
+    "db:seed": "pnpm --filter @finanzas/db seed"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.6.6",
-    "@changesets/cli": "^2.29.0",
     "@commitlint/cli": "^20.0.0",
     "@commitlint/config-conventional": "^20.0.0",
     "lefthook": "^2.0.0",

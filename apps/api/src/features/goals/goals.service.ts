@@ -43,11 +43,25 @@ export function goalsService(db: Db) {
         .from(goals)
         .where(and(eq(goals.id, goalId), eq(goals.userId, userId)));
       if (!goal) return null;
-      const [row] = await db
-        .insert(goalContributions)
-        .values({ goalId, amountMinor: BigInt(amountMinor) })
-        .returning();
-      return row;
+      return db.transaction(async (tx) => {
+        const [row] = await tx
+          .insert(goalContributions)
+          .values({ goalId, amountMinor: BigInt(amountMinor) })
+          .returning();
+        // shortcut: dos aportes simultáneos que solo juntos llegan a la meta pueden no marcarla
+        // (read committed); con un usuario no pasa, revisar con SELECT ... FOR UPDATE si crece.
+        await tx
+          .update(goals)
+          .set({ status: 'completed' })
+          .where(
+            and(
+              eq(goals.id, goalId),
+              eq(goals.status, 'active'),
+              sql`${goals.targetMinor} <= (select sum(${goalContributions.amountMinor}) from ${goalContributions} where ${goalContributions.goalId} = ${goalId})`,
+            ),
+          );
+        return row;
+      });
     },
   };
 }

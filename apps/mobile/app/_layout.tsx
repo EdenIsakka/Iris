@@ -6,7 +6,12 @@ import { queryClient } from '@/lib/query-client';
 export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Stack screenOptions={{ headerShown: false }} />
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen
+          name="goals/[id]/contribute"
+          options={{ presentation: 'modal', headerShown: true, title: 'Aportar a la meta' }}
+        />
+      </Stack>
       <StatusBar style="auto" />
     </QueryClientProvider>
   );

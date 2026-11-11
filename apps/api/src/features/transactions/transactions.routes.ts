@@ -11,6 +11,10 @@ export const transactionsRoutes = new Hono<AppEnv>()
     const rows = await transactionsService(c.var.db).list(c.var.userId);
     return c.json(rows.map(serializeMoney));
   })
+  .get('/summary', async (c) => {
+    const s = await transactionsService(c.var.db).monthSummary(c.var.userId);
+    return c.json({ ...serializeMoney(s), byCategory: s.byCategory.map(serializeMoney) });
+  })
   .post('/', zValidator('json', createTransactionSchema), async (c) => {
     const row = await transactionsService(c.var.db).create(c.var.userId, c.req.valid('json'));
     if (!row) throw new HTTPException(404, { message: 'Billetera o categoría no encontrada' });

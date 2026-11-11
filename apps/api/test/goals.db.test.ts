@@ -74,6 +74,10 @@ describe.skipIf(!url)('POST /v1/goals/:id/contributions contra Postgres', () => 
     expect((await contribute(own, '0')).status).toBe(400);
   });
 
+  it('responde 400 si el id no es un UUID', async () => {
+    expect((await contribute('abc', '2500')).status).toBe(400);
+  });
+
   const createGoal = (name: string) =>
     app.request('/v1/goals', {
       method: 'POST',

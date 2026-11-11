@@ -6,13 +6,13 @@ Gestor de finanzas personales pensado para el celular: registra ingresos y gasto
 
 ## Stack
 
-| Capa     | Tecnología                                             |
-| -------- | ------------------------------------------------------ |
-| App      | Expo SDK 58, Expo Router, TanStack Query               |
-| API      | Hono (RPC tipado), Zod                                 |
-| Datos    | PostgreSQL, Drizzle ORM                                |
-| Monorepo | pnpm workspaces, Turborepo                             |
-| Calidad  | TypeScript strict, Biome, Vitest, Jest, GitHub Actions |
+| Capa     | Tecnología                                       |
+| -------- | ------------------------------------------------ |
+| App      | Expo SDK 58, Expo Router, TanStack Query         |
+| API      | Hono (RPC tipado), Zod                           |
+| Datos    | PostgreSQL, Drizzle ORM                          |
+| Monorepo | pnpm workspaces, Turborepo                       |
+| Calidad  | TypeScript strict, Biome, Vitest, GitHub Actions |
 
 Las decisiones están documentadas como ADRs en [`docs/adr`](docs/adr).
 
@@ -35,6 +35,7 @@ Requisitos: Node 22, pnpm, Docker.
 
 ```bash
 cp .env.example .env
+cp apps/mobile/.env.example apps/mobile/.env   # en un celular físico, pon ahí la IP de tu PC
 pnpm install
 pnpm db:up && pnpm db:generate && pnpm db:migrate && pnpm db:seed
 pnpm dev

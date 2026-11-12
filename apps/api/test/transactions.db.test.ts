@@ -77,6 +77,55 @@ describe.skipIf(!url)('Datos por usuario contra Postgres', () => {
     expect((await post(own.wallet, income.id)).status).toBe(404);
   });
 
+  const put = (id: string, body: Record<string, unknown>) =>
+    app.request(`/v1/transactions/${id}`, {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        kind: 'expense',
+        amountMinor: '1000',
+        occurredAt: '2026-11-11T12:00:00Z',
+        categoryId: null,
+        ...body,
+      }),
+    });
+
+  it('edita un movimiento propio y puede borrar la nota', async () => {
+    const created = await app.request('/v1/transactions', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        walletId: own.wallet,
+        categoryId: null,
+        kind: 'expense',
+        amountMinor: '1000',
+        occurredAt: '2026-11-11T12:00:00Z',
+        note: 'Antes',
+      }),
+    });
+    const { id } = (await created.json()) as { id: string };
+    const res = await put(id, { walletId: own.wallet, amountMinor: '2500' });
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({ amountMinor: '2500', note: null });
+  });
+
+  it('no edita el movimiento de otro usuario ni usa su billetera', async () => {
+    const [theirs] = await db
+      .insert(transactions)
+      .values({
+        userId: 'otro',
+        walletId: other.wallet,
+        kind: 'expense',
+        amountMinor: 1000n,
+        occurredAt: new Date(),
+      })
+      .returning();
+    if (!theirs) throw new Error('seed falló');
+    expect((await put(theirs.id, { walletId: own.wallet })).status).toBe(404);
+    const { id } = (await (await post(own.wallet, null)).json()) as { id: string };
+    expect((await put(id, { walletId: other.wallet })).status).toBe(404);
+  });
+
   it('borra un movimiento propio una sola vez', async () => {
     const { id } = (await (await post(own.wallet, null)).json()) as { id: string };
     const del = () => app.request(`/v1/transactions/${id}`, { method: 'DELETE' });

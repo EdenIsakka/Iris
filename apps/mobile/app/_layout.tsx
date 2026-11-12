@@ -12,6 +12,10 @@ export default function RootLayout() {
           options={{ presentation: 'modal', headerShown: true, title: 'Nuevo movimiento' }}
         />
         <Stack.Screen
+          name="transactions/[id]"
+          options={{ presentation: 'modal', headerShown: true, title: 'Editar movimiento' }}
+        />
+        <Stack.Screen
           name="goals/new"
           options={{ presentation: 'modal', headerShown: true, title: 'Nueva meta' }}
         />

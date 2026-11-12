@@ -1,28 +1,44 @@
 import { createTransactionSchema } from '@finanzas/shared';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { useState } from 'react';
+import { type ReactNode, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { AmountInput } from '@/components/ui/amount-input';
-import { useCategories, useCreateCategory, useCreateTransaction, useWallets } from '../api';
+import {
+  type Transaction,
+  useCategories,
+  useCreateCategory,
+  useCreateTransaction,
+  useUpdateTransaction,
+  useWallets,
+} from '../api';
 
 type Kind = 'expense' | 'income';
 
-type Props = { onSaved: () => void };
+type Props = {
+  onSaved: () => void;
+  /** Si viene, el formulario edita este movimiento en vez de crear uno nuevo. */
+  transaction?: Transaction;
+  footer?: ReactNode;
+};
 
-export function TransactionForm({ onSaved }: Props) {
+export function TransactionForm({ onSaved, transaction, footer }: Props) {
   const wallets = useWallets();
   const categories = useCategories();
-  const create = useCreateTransaction();
+  const createTx = useCreateTransaction();
+  const updateTx = useUpdateTransaction(transaction?.id ?? '');
+  const create = transaction ? updateTx : createTx;
   const createCategory = useCreateCategory();
 
-  const [kind, setKind] = useState<Kind>('expense');
-  const [amount, setAmount] = useState('');
-  const [walletId, setWalletId] = useState<string | null>(null);
-  const [categoryId, setCategoryId] = useState<string | null>(null);
-  const [note, setNote] = useState('');
+  const [kind, setKind] = useState<Kind>(transaction?.kind ?? 'expense');
+  const [amount, setAmount] = useState(transaction?.amountMinor ?? '');
+  const [walletId, setWalletId] = useState<string | null>(transaction?.walletId ?? null);
+  const [categoryId, setCategoryId] = useState<string | null>(transaction?.categoryId ?? null);
+  const [note, setNote] = useState(transaction?.note ?? '');
   const [error, setError] = useState<string | null>(null);
   const [newCategory, setNewCategory] = useState<string | null>(null);
-  const [date, setDate] = useState(() => new Date());
+  const [date, setDate] = useState(() =>
+    transaction ? new Date(transaction.occurredAt) : new Date(),
+  );
   const [pickingDate, setPickingDate] = useState(false);
 
   if (wallets.isLoading || categories.isLoading) return <Text>Cargando…</Text>;
@@ -191,6 +207,7 @@ export function TransactionForm({ onSaved }: Props) {
       >
         <Text style={styles.buttonText}>{create.isPending ? 'Guardando…' : 'Guardar'}</Text>
       </Pressable>
+      {footer}
     </ScrollView>
   );
 }

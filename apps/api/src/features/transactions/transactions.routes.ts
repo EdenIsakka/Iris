@@ -20,6 +20,20 @@ export const transactionsRoutes = new Hono<AppEnv>()
     if (!row) throw new HTTPException(404, { message: 'Billetera o categoría no encontrada' });
     return c.json(serializeMoney(row), 201);
   })
+  .put(
+    '/:id',
+    zValidator('param', idParamSchema),
+    zValidator('json', createTransactionSchema),
+    async (c) => {
+      const row = await transactionsService(c.var.db).update(
+        c.var.userId,
+        c.req.valid('param').id,
+        c.req.valid('json'),
+      );
+      if (!row) throw new HTTPException(404, { message: 'Movimiento no encontrado' });
+      return c.json(serializeMoney(row), 200);
+    },
+  )
   .delete('/:id', zValidator('param', idParamSchema), async (c) => {
     const removed = await transactionsService(c.var.db).remove(
       c.var.userId,

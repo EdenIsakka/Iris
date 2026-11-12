@@ -78,6 +78,35 @@ describe.skipIf(!url)('POST /v1/goals/:id/contributions contra Postgres', () => 
     expect((await contribute('abc', '2500')).status).toBe(400);
   });
 
+  const put = (id: string, targetMinor: string) =>
+    app.request(`/v1/goals/${id}`, {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ name: ' Nueva ', targetMinor }),
+    });
+
+  it('edita la meta y recalcula si quedó cumplida', async () => {
+    const id = await seedGoal('demo-user');
+    await contribute(id, '5000');
+    const lower = await put(id, '5000');
+    expect(lower.status).toBe(200);
+    expect(await lower.json()).toMatchObject({ name: 'Nueva', status: 'completed' });
+    expect(await (await put(id, '9000')).json()).toMatchObject({ status: 'active' });
+  });
+
+  it('no edita ni borra la meta de otro usuario', async () => {
+    expect((await put(other, '5000')).status).toBe(404);
+    expect((await app.request(`/v1/goals/${other}`, { method: 'DELETE' })).status).toBe(404);
+  });
+
+  it('borra una meta propia una sola vez', async () => {
+    const id = await seedGoal('demo-user');
+    await contribute(id, '1000');
+    const del = () => app.request(`/v1/goals/${id}`, { method: 'DELETE' });
+    expect((await del()).status).toBe(204);
+    expect((await del()).status).toBe(404);
+  });
+
   const createGoal = (name: string) =>
     app.request('/v1/goals', {
       method: 'POST',

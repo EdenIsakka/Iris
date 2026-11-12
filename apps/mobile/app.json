@@ -10,7 +10,7 @@
     "ios": { "bundleIdentifier": "com.julianisaza.finanzas" },
     "android": { "package": "com.julianisaza.finanzas" },
     "web": { "bundler": "metro", "output": "static" },
-    "plugins": ["expo-router"],
+    "plugins": ["expo-router", "@react-native-community/datetimepicker"],
     "experiments": { "typedRoutes": true }
   }
 }

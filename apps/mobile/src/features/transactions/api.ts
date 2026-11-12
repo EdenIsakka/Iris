@@ -39,6 +39,20 @@ export function useCreateTransaction() {
   });
 }
 
+export type Transaction = NonNullable<ReturnType<typeof useTransactions>['data']>[number];
+
+export function useUpdateTransaction(id: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (json: CreateTransactionInput) => {
+      const res = await api.v1.transactions[':id'].$put({ param: { id }, json });
+      if (!res.ok) throw new Error('No se pudo guardar el movimiento');
+      return res.json();
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: transactionKeys.all }),
+  });
+}
+
 export function useDeleteTransaction() {
   const queryClient = useQueryClient();
   return useMutation({

@@ -39,6 +39,17 @@ export function useCreateTransaction() {
   });
 }
 
+export function useDeleteTransaction() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const res = await api.v1.transactions[':id'].$delete({ param: { id } });
+      if (!res.ok) throw new Error('No se pudo borrar el movimiento');
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: transactionKeys.all }),
+  });
+}
+
 // Billeteras y categorías solo las usa el formulario de movimientos por ahora (ADR-0005).
 export function useWallets() {
   return useQuery({

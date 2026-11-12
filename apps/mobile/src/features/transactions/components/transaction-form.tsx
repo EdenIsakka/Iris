@@ -1,4 +1,5 @@
 import { createTransactionSchema } from '@finanzas/shared';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { AmountInput } from '@/components/ui/amount-input';
@@ -21,6 +22,8 @@ export function TransactionForm({ onSaved }: Props) {
   const [note, setNote] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [newCategory, setNewCategory] = useState<string | null>(null);
+  const [date, setDate] = useState(() => new Date());
+  const [pickingDate, setPickingDate] = useState(false);
 
   if (wallets.isLoading || categories.isLoading) return <Text>Cargando…</Text>;
   if (wallets.error) return <Text>{wallets.error.message}</Text>;
@@ -37,7 +40,7 @@ export function TransactionForm({ onSaved }: Props) {
       kind,
       amountMinor: amount,
       currency: 'COP',
-      occurredAt: new Date().toISOString(),
+      occurredAt: date.toISOString(),
       note: note.trim() || undefined,
     });
     if (!parsed.success) {
@@ -85,6 +88,28 @@ export function TransactionForm({ onSaved }: Props) {
       </View>
 
       <AmountInput label="Monto (COP)" value={amount} onChangeValue={setAmount} autoFocus />
+
+      <Text style={styles.label}>Fecha</Text>
+      <View style={styles.row}>
+        <Chip label="Hoy" selected={isSameDay(date, 0)} onPress={() => setDate(daysAgo(0))} />
+        <Chip label="Ayer" selected={isSameDay(date, 1)} onPress={() => setDate(daysAgo(1))} />
+        <Chip
+          label={isSameDay(date, 0) || isSameDay(date, 1) ? 'Otra fecha' : formatDate(date)}
+          selected={!isSameDay(date, 0) && !isSameDay(date, 1)}
+          onPress={() => setPickingDate(true)}
+        />
+      </View>
+      {pickingDate ? (
+        <DateTimePicker
+          value={date}
+          mode="date"
+          maximumDate={new Date()}
+          onChange={(event, picked) => {
+            setPickingDate(false);
+            if (event.type === 'set' && picked) setDate(picked);
+          }}
+        />
+      ) : null}
 
       {wallets.data.length > 1 ? (
         <>
@@ -168,6 +193,20 @@ export function TransactionForm({ onSaved }: Props) {
       </Pressable>
     </ScrollView>
   );
+}
+
+function daysAgo(n: number) {
+  const d = new Date();
+  d.setDate(d.getDate() - n);
+  return d;
+}
+
+function isSameDay(date: Date, nDaysAgo: number) {
+  return date.toDateString() === daysAgo(nDaysAgo).toDateString();
+}
+
+function formatDate(date: Date) {
+  return date.toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 function Chip({

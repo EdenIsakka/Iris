@@ -15,7 +15,15 @@ export function TransactionList() {
       ListEmptyComponent={<Text>Aún no tienes movimientos.</Text>}
       renderItem={({ item }) => (
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8 }}>
-          <Text>{item.note ?? (item.kind === 'income' ? 'Ingreso' : 'Gasto')}</Text>
+          <View>
+            <Text>{item.note ?? (item.kind === 'income' ? 'Ingreso' : 'Gasto')}</Text>
+            <Text style={{ color: '#555', fontSize: 12 }}>
+              {new Date(item.occurredAt).toLocaleDateString('es-CO', {
+                day: 'numeric',
+                month: 'short',
+              })}
+            </Text>
+          </View>
           <Text>
             {item.kind === 'expense' ? '−' : '+'}
             {formatMoney(BigInt(item.amountMinor))}

@@ -27,6 +27,31 @@ export function useCreateGoal() {
   });
 }
 
+export type Goal = NonNullable<ReturnType<typeof useGoals>['data']>[number];
+
+export function useUpdateGoal(id: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: CreateGoalInput) => {
+      const res = await api.v1.goals[':id'].$put({ param: { id }, json: input });
+      if (!res.ok) throw new Error('No se pudo guardar la meta');
+      return res.json();
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: goalKeys.all }),
+  });
+}
+
+export function useDeleteGoal() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const res = await api.v1.goals[':id'].$delete({ param: { id } });
+      if (!res.ok) throw new Error('No se pudo borrar la meta');
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: goalKeys.all }),
+  });
+}
+
 export function useContribute(goalId: string) {
   const queryClient = useQueryClient();
   return useMutation({

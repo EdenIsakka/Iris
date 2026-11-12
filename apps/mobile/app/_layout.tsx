@@ -16,6 +16,10 @@ export default function RootLayout() {
           options={{ presentation: 'modal', headerShown: true, title: 'Editar movimiento' }}
         />
         <Stack.Screen
+          name="goals/[id]/edit"
+          options={{ presentation: 'modal', headerShown: true, title: 'Editar meta' }}
+        />
+        <Stack.Screen
           name="goals/new"
           options={{ presentation: 'modal', headerShown: true, title: 'Nueva meta' }}
         />

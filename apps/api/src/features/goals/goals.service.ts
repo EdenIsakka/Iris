@@ -37,6 +37,32 @@ export function goalsService(db: Db) {
       return row;
     },
 
+    /** Cambia nombre y monto; el estado se recalcula contra lo ahorrado. null si no es suya. */
+    async update(userId: string, id: string, input: CreateGoalInput) {
+      const target = BigInt(input.targetMinor);
+      const saved = sql`(select coalesce(sum(${goalContributions.amountMinor}), 0) from ${goalContributions} where ${goalContributions.goalId} = ${goals.id})`;
+      const [row] = await db
+        .update(goals)
+        .set({
+          name: input.name,
+          targetMinor: target,
+          deadline: input.deadline ?? null,
+          status: sql`case when ${goals.status} = 'archived' then ${goals.status} when ${target} <= ${saved} then 'completed'::goal_status else 'active'::goal_status end`,
+        })
+        .where(and(eq(goals.id, id), eq(goals.userId, userId)))
+        .returning();
+      return row ?? null;
+    },
+
+    /** Borra la meta y sus aportes (cascada). false si no existe o no es suya. */
+    async remove(userId: string, id: string) {
+      const rows = await db
+        .delete(goals)
+        .where(and(eq(goals.id, id), eq(goals.userId, userId)))
+        .returning({ id: goals.id });
+      return rows.length > 0;
+    },
+
     async contribute(userId: string, goalId: string, amountMinor: string) {
       const [goal] = await db
         .select({ id: goals.id })

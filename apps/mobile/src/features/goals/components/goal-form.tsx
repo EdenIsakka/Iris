@@ -1,15 +1,22 @@
 import { createGoalSchema } from '@finanzas/shared';
-import { useState } from 'react';
+import { type ReactNode, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { AmountInput } from '@/components/ui/amount-input';
-import { useCreateGoal } from '../api';
+import { type Goal, useCreateGoal, useUpdateGoal } from '../api';
 
-type Props = { onSaved: () => void };
+type Props = {
+  onSaved: () => void;
+  /** Si viene, el formulario edita esta meta en vez de crear una nueva. */
+  goal?: Goal;
+  footer?: ReactNode;
+};
 
-export function GoalForm({ onSaved }: Props) {
-  const createGoal = useCreateGoal();
-  const [name, setName] = useState('');
-  const [target, setTarget] = useState('');
+export function GoalForm({ onSaved, goal, footer }: Props) {
+  const create = useCreateGoal();
+  const update = useUpdateGoal(goal?.id ?? '');
+  const save = goal ? update : create;
+  const [name, setName] = useState(goal?.name ?? '');
+  const [target, setTarget] = useState(goal?.targetMinor ?? '');
   const [error, setError] = useState<string | null>(null);
 
   function submit() {
@@ -20,7 +27,7 @@ export function GoalForm({ onSaved }: Props) {
       return;
     }
     setError(null);
-    createGoal.mutate(parsed.data, { onSuccess: onSaved });
+    save.mutate(parsed.data, { onSuccess: onSaved });
   }
 
   return (
@@ -36,7 +43,7 @@ export function GoalForm({ onSaved }: Props) {
         maxLength={80}
         accessibilityLabel="Nombre de la meta"
         accessibilityLabelledBy="goal-name-label"
-        autoFocus
+        autoFocus={!goal}
       />
 
       <AmountInput
@@ -45,21 +52,24 @@ export function GoalForm({ onSaved }: Props) {
         onChangeValue={setTarget}
       />
 
-      {error || createGoal.error ? (
+      {error || save.error ? (
         <Text style={styles.error} accessibilityRole="alert">
-          {error ?? createGoal.error?.message}
+          {error ?? save.error?.message}
         </Text>
       ) : null}
 
       <Pressable
-        style={[styles.button, createGoal.isPending && styles.buttonDisabled]}
+        style={[styles.button, save.isPending && styles.buttonDisabled]}
         onPress={submit}
-        disabled={createGoal.isPending}
+        disabled={save.isPending}
         accessibilityRole="button"
-        accessibilityState={{ disabled: createGoal.isPending }}
+        accessibilityState={{ disabled: save.isPending }}
       >
-        <Text style={styles.buttonText}>{createGoal.isPending ? 'Guardando…' : 'Crear meta'}</Text>
+        <Text style={styles.buttonText}>
+          {save.isPending ? 'Guardando…' : goal ? 'Guardar' : 'Crear meta'}
+        </Text>
       </Pressable>
+      {footer}
     </View>
   );
 }

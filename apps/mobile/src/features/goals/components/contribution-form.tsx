@@ -1,4 +1,5 @@
 import { contributeToGoalSchema, formatMoney } from '@finanzas/shared';
+import { Link } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { AmountInput } from '@/components/ui/amount-input';
@@ -59,6 +60,12 @@ export function ContributionForm({ goalId, onSaved }: Props) {
       >
         <Text style={styles.buttonText}>{contribute.isPending ? 'Guardando…' : 'Aportar'}</Text>
       </Pressable>
+
+      <Link href={{ pathname: '/goals/[id]/edit', params: { id: goalId } }} asChild>
+        <Pressable style={styles.link} accessibilityRole="button">
+          <Text style={styles.linkText}>Editar o borrar meta</Text>
+        </Pressable>
+      </Link>
     </View>
   );
 }
@@ -78,4 +85,6 @@ const styles = StyleSheet.create({
   },
   buttonDisabled: { opacity: 0.6 },
   buttonText: { color: '#fff', fontWeight: '700', fontSize: 16 },
+  link: { minHeight: 44, alignItems: 'center', justifyContent: 'center' },
+  linkText: { color: '#1b5e20', fontWeight: '600' },
 });

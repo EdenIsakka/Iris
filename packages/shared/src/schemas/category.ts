@@ -6,4 +6,7 @@ export const createCategorySchema = z.object({
   kind: transactionKind,
 });
 
+// El tipo no se cambia: los movimientos ya guardados dependen de él.
+export const renameCategorySchema = createCategorySchema.pick({ name: true });
+
 export type CreateCategoryInput = z.infer<typeof createCategorySchema>;

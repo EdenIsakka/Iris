@@ -1,5 +1,10 @@
-import type { CreateCategoryInput, CreateTransactionInput } from '@finanzas/shared';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  type CreateCategoryInput,
+  type CreateTransactionInput,
+  TRANSACTIONS_PAGE_SIZE,
+  type TransactionsPageQuery,
+} from '@finanzas/shared';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { walletKeys } from '@/features/wallets/api';
 import { api } from '@/lib/api-client';
 
@@ -11,12 +16,32 @@ function refreshAfterTransaction(queryClient: ReturnType<typeof useQueryClient>)
   queryClient.invalidateQueries({ queryKey: walletKeys.all });
 }
 
+/** Movimientos de a páginas, del más nuevo al más viejo. */
 export function useTransactions() {
-  return useQuery({
-    queryKey: transactionKeys.all,
-    queryFn: async () => {
-      const res = await api.v1.transactions.$get();
+  return useInfiniteQuery({
+    queryKey: [...transactionKeys.all, 'list'],
+    initialPageParam: {} as TransactionsPageQuery,
+    queryFn: async ({ pageParam }) => {
+      const res = await api.v1.transactions.$get({ query: pageParam });
       if (!res.ok) throw new Error('No se pudieron cargar los movimientos');
+      return res.json();
+    },
+    getNextPageParam: (page): TransactionsPageQuery | undefined => {
+      const last = page.at(-1);
+      return page.length === TRANSACTIONS_PAGE_SIZE && last
+        ? { before: last.occurredAt, beforeId: last.id }
+        : undefined;
+    },
+  });
+}
+
+export function useTransaction(id: string) {
+  return useQuery({
+    queryKey: [...transactionKeys.all, id],
+    queryFn: async () => {
+      const res = await api.v1.transactions[':id'].$get({ param: { id } });
+      if ((res.status as number) === 404) return null;
+      if (!res.ok) throw new Error('No se pudo cargar el movimiento');
       return res.json();
     },
   });
@@ -46,7 +71,7 @@ export function useCreateTransaction() {
   });
 }
 
-export type Transaction = NonNullable<ReturnType<typeof useTransactions>['data']>[number];
+export type Transaction = NonNullable<ReturnType<typeof useTransaction>['data']>;
 
 export function useUpdateTransaction(id: string) {
   const queryClient = useQueryClient();

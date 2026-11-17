@@ -1,4 +1,4 @@
-import { createTransactionSchema, idParamSchema } from '@finanzas/shared';
+import { createTransactionSchema, idParamSchema, transactionsPageQuery } from '@finanzas/shared';
 import { zValidator } from '@hono/zod-validator';
 import { Hono } from 'hono';
 import { HTTPException } from 'hono/http-exception';
@@ -7,13 +7,18 @@ import type { AppEnv } from '../../lib/types';
 import { transactionsService } from './transactions.service';
 
 export const transactionsRoutes = new Hono<AppEnv>()
-  .get('/', async (c) => {
-    const rows = await transactionsService(c.var.db).list(c.var.userId);
+  .get('/', zValidator('query', transactionsPageQuery), async (c) => {
+    const rows = await transactionsService(c.var.db).list(c.var.userId, c.req.valid('query'));
     return c.json(rows.map(serializeMoney));
   })
   .get('/summary', async (c) => {
     const s = await transactionsService(c.var.db).monthSummary(c.var.userId);
     return c.json({ ...serializeMoney(s), byCategory: s.byCategory.map(serializeMoney) });
+  })
+  .get('/:id', zValidator('param', idParamSchema), async (c) => {
+    const row = await transactionsService(c.var.db).get(c.var.userId, c.req.valid('param').id);
+    if (!row) throw new HTTPException(404, { message: 'Movimiento no encontrado' });
+    return c.json(serializeMoney(row), 200);
   })
   .post('/', zValidator('json', createTransactionSchema), async (c) => {
     const row = await transactionsService(c.var.db).create(c.var.userId, c.req.valid('json'));

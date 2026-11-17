@@ -6,9 +6,17 @@ type Valuation = { valueMinor: bigint; occurredAt: Date };
 /** Inicio del periodo contando hacia atrás desde `now`. */
 export function periodStart(period: InvestmentPeriod, now = new Date()) {
   const d = new Date(now);
-  if (period === 'week') d.setDate(d.getDate() - 7);
-  if (period === 'month') d.setMonth(d.getMonth() - 1);
-  if (period === 'year') d.setFullYear(d.getFullYear() - 1);
+  if (period === 'week') {
+    d.setDate(d.getDate() - 7);
+    return d;
+  }
+  // El 31 de marzo menos un mes es el 28 (o 29) de febrero, no el 3 de marzo.
+  const months = period === 'month' ? 1 : 12;
+  const day = d.getDate();
+  d.setDate(1);
+  d.setMonth(d.getMonth() - months);
+  const lastDay = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+  d.setDate(Math.min(day, lastDay));
   return d;
 }
 

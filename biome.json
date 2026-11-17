@@ -6,6 +6,9 @@
   "linter": {
     "rules": {
       "preset": "recommended",
+      "correctness": {
+        "noReactNativeRawText": { "level": "error", "options": { "skip": ["FieldLabel"] } }
+      },
       "suspicious": { "noExplicitAny": "error" },
       "style": {
         "useFilenamingConvention": {

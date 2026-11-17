@@ -5,7 +5,7 @@ import {
   type TransactionsPageQuery,
 } from '@finanzas/shared';
 import { and, desc, eq, gte, sql } from 'drizzle-orm';
-import { monthStart } from '../../lib/month';
+import { monthStart, TZ } from '../../lib/month';
 
 /** Lógica de negocio sin saber nada de HTTP: fácil de probar y reutilizar. */
 // note null la borra al editar; undefined la dejaría como estaba.
@@ -112,6 +112,26 @@ export function transactionsService(db: Db) {
       ]);
       const sumOf = (kind: string) => byKind.find((r) => r.kind === kind)?.total ?? 0n;
       return { incomeMinor: sumOf('income'), expenseMinor: sumOf('expense'), byCategory };
+    },
+
+    /** Ingresos y gastos de los últimos `months` meses (hora de Colombia), con 0 en los vacíos. */
+    async monthly(userId: string, months = 6) {
+      const thisMonth = sql`date_trunc('month', now() at time zone ${TZ})`;
+      const rows = await db.execute<{ month: string; income: string; expense: string }>(sql`
+        select to_char(m, 'YYYY-MM') as month,
+          coalesce(sum(${transactions.amountMinor}) filter (where ${transactions.kind} = 'income'), 0) as income,
+          coalesce(sum(${transactions.amountMinor}) filter (where ${transactions.kind} = 'expense'), 0) as expense
+        from generate_series(${thisMonth} - make_interval(months => ${months - 1}), ${thisMonth}, interval '1 month') as m
+        left join ${transactions} on ${transactions.userId} = ${userId}
+          and ${transactions.occurredAt} >= m at time zone ${TZ}
+          and ${transactions.occurredAt} < (m + interval '1 month') at time zone ${TZ}
+        group by m
+        order by m`);
+      return rows.map((r) => ({
+        month: r.month,
+        incomeMinor: BigInt(r.income),
+        expenseMinor: BigInt(r.expense),
+      }));
     },
 
     /** Devuelve false si no existe o es de otro usuario. */

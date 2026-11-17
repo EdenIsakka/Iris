@@ -20,7 +20,7 @@ Las decisiones están documentadas como ADRs en [`docs/adr`](docs/adr).
 
 ```
 apps/
-  api/        API Hono (features: transactions, goals, health)
+  api/        API Hono (features: transactions, wallets, categories, budgets, goals, investments)
   mobile/     App Expo (app/ = rutas, src/features = lógica)
 packages/
   shared/     Esquemas Zod + utilidades de dinero

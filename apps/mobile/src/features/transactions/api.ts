@@ -1,8 +1,15 @@
 import type { CreateCategoryInput, CreateTransactionInput } from '@finanzas/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { walletKeys } from '@/features/wallets/api';
 import { api } from '@/lib/api-client';
 
 export const transactionKeys = { all: ['transactions'] as const };
+
+/** Un movimiento cambia la lista, el resumen y el saldo de su billetera. */
+function refreshAfterTransaction(queryClient: ReturnType<typeof useQueryClient>) {
+  queryClient.invalidateQueries({ queryKey: transactionKeys.all });
+  queryClient.invalidateQueries({ queryKey: walletKeys.all });
+}
 
 export function useTransactions() {
   return useQuery({
@@ -35,7 +42,7 @@ export function useCreateTransaction() {
       if (!res.ok) throw new Error('No se pudo guardar el movimiento');
       return res.json();
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: transactionKeys.all }),
+    onSuccess: () => refreshAfterTransaction(queryClient),
   });
 }
 
@@ -49,7 +56,7 @@ export function useUpdateTransaction(id: string) {
       if (!res.ok) throw new Error('No se pudo guardar el movimiento');
       return res.json();
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: transactionKeys.all }),
+    onSuccess: () => refreshAfterTransaction(queryClient),
   });
 }
 
@@ -60,19 +67,7 @@ export function useDeleteTransaction() {
       const res = await api.v1.transactions[':id'].$delete({ param: { id } });
       if (!res.ok) throw new Error('No se pudo borrar el movimiento');
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: transactionKeys.all }),
-  });
-}
-
-// Billeteras y categorías solo las usa el formulario de movimientos por ahora (ADR-0005).
-export function useWallets() {
-  return useQuery({
-    queryKey: ['wallets'],
-    queryFn: async () => {
-      const res = await api.v1.wallets.$get();
-      if (!res.ok) throw new Error('No se pudieron cargar las billeteras');
-      return res.json();
-    },
+    onSuccess: () => refreshAfterTransaction(queryClient),
   });
 }
 

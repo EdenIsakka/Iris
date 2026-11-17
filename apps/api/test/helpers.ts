@@ -1,5 +1,13 @@
-import { categories, type Db, goals, investments, users, wallets } from '@finanzas/db';
-import { inArray } from 'drizzle-orm';
+import {
+  categories,
+  type Db,
+  goals,
+  investments,
+  transactions,
+  users,
+  wallets,
+} from '@finanzas/db';
+import { inArray, or } from 'drizzle-orm';
 import type { createApp } from '../src/app';
 
 export const testAuth = {
@@ -32,8 +40,15 @@ export async function signUp(app: App) {
   return { userId: user.id, request };
 }
 
-/** Borra todo lo de estos usuarios; las cascadas se llevan movimientos, aportes y sesiones. */
+/** Borra todo lo de estos usuarios; las cascadas se llevan aportes y sesiones. */
 export async function deleteUsers(db: Db, ids: string[]) {
+  const theirWallets = db
+    .select({ id: wallets.id })
+    .from(wallets)
+    .where(inArray(wallets.userId, ids));
+  await db
+    .delete(transactions)
+    .where(or(inArray(transactions.userId, ids), inArray(transactions.walletId, theirWallets)));
   await db.delete(wallets).where(inArray(wallets.userId, ids));
   await db.delete(categories).where(inArray(categories.userId, ids));
   await db.delete(goals).where(inArray(goals.userId, ids));

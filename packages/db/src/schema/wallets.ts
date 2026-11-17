@@ -1,13 +1,13 @@
 import { sql } from 'drizzle-orm';
 import { bigint, pgEnum, pgTable, text } from 'drizzle-orm/pg-core';
 import { currency, id, timestamps } from './_shared';
+import { ownerId } from './auth';
 
 export const walletType = pgEnum('wallet_type', ['cash', 'bank', 'card']);
 
 export const wallets = pgTable('wallets', {
   id: id(),
-  // TODO(auth): referenciar user.id cuando se agregue Better Auth.
-  userId: text().notNull(),
+  userId: ownerId(),
   name: text().notNull(),
   type: walletType().notNull(),
   /** Lo que tenía antes de empezar a registrar movimientos. */

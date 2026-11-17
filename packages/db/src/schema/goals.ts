@@ -1,11 +1,12 @@
 import { date, pgEnum, pgTable, text, uuid } from 'drizzle-orm/pg-core';
 import { currency, id, money, timestamps } from './_shared';
+import { ownerId } from './auth';
 
 export const goalStatus = pgEnum('goal_status', ['active', 'completed', 'archived']);
 
 export const goals = pgTable('goals', {
   id: id(),
-  userId: text().notNull(),
+  userId: ownerId(),
   name: text().notNull(),
   targetMinor: money(),
   currency: currency(),

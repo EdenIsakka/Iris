@@ -1,16 +1,18 @@
 import { categories, createDb, transactions, wallets } from '@finanzas/db';
-import { eq, inArray } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createApp } from '../src/app';
+import { deleteUsers, signUp, testAuth } from './helpers';
 
 // Necesita Postgres con migraciones: corre en CI y en local con DATABASE_URL definida.
 const url = process.env.DATABASE_URL;
 
 describe.skipIf(!url)('Datos por usuario contra Postgres', () => {
   const db = createDb(url ?? '');
-  const app = createApp({ db, corsOrigin: '*' });
-  const walletIds: string[] = [];
-  const categoryIds: string[] = [];
+  const app = createApp({ db, corsOrigin: '*', auth: testAuth });
+  let me: Awaited<ReturnType<typeof signUp>>;
+  const req = (path: string, init?: RequestInit) => me.request(path, init);
+  const otherUser = `otro-${crypto.randomUUID()}`;
   let own = { wallet: '', category: '' };
   let other = { wallet: '', category: '' };
 
@@ -21,25 +23,22 @@ describe.skipIf(!url)('Datos por usuario contra Postgres', () => {
       .values({ userId, name: 'Test', kind: 'expense' })
       .returning();
     if (!w || !c) throw new Error('seed falló');
-    walletIds.push(w.id);
-    categoryIds.push(c.id);
     return { wallet: w.id, category: c.id };
   }
 
   beforeAll(async () => {
-    own = await seedUser('demo-user'); // el usuario que pone el middleware en desarrollo
-    other = await seedUser(`otro-${crypto.randomUUID()}`);
+    me = await signUp(app);
+    own = await seedUser(me.userId);
+    other = await seedUser(otherUser);
   });
 
   afterAll(async () => {
-    // La cascada de wallets borra las transacciones creadas aquí.
-    await db.delete(wallets).where(inArray(wallets.id, walletIds));
-    await db.delete(categories).where(inArray(categories.id, categoryIds));
+    await deleteUsers(db, [me.userId, otherUser]);
     await db.$client.end();
   });
 
   const post = (walletId: string, categoryId: string | null) =>
-    app.request('/v1/transactions', {
+    req('/v1/transactions', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
@@ -50,6 +49,17 @@ describe.skipIf(!url)('Datos por usuario contra Postgres', () => {
         occurredAt: '2026-11-11T12:00:00Z',
       }),
     });
+
+  it('sin sesión responde 401', async () => {
+    expect((await app.request('/v1/wallets')).status).toBe(401);
+  });
+
+  it('una cuenta nueva arranca con billetera y categorías por defecto', async () => {
+    const wallets = (await (await req('/v1/wallets')).json()) as { name: string }[];
+    expect(wallets.map((w) => w.name)).toContain('Cuenta de ahorros');
+    const cats = (await (await req('/v1/categories')).json()) as { name: string }[];
+    expect(cats.map((c) => c.name)).toEqual(expect.arrayContaining(['Mercado', 'Salario']));
+  });
 
   it('crea con billetera y categoría propias', async () => {
     expect((await post(own.wallet, own.category)).status).toBe(201);
@@ -70,15 +80,14 @@ describe.skipIf(!url)('Datos por usuario contra Postgres', () => {
   it('rechaza un gasto con una categoría de ingreso', async () => {
     const [income] = await db
       .insert(categories)
-      .values({ userId: 'demo-user', name: 'Test ingreso', kind: 'income' })
+      .values({ userId: me.userId, name: 'Test ingreso', kind: 'income' })
       .returning();
     if (!income) throw new Error('seed falló');
-    categoryIds.push(income.id);
     expect((await post(own.wallet, income.id)).status).toBe(404);
   });
 
   const put = (id: string, body: Record<string, unknown>) =>
-    app.request(`/v1/transactions/${id}`, {
+    req(`/v1/transactions/${id}`, {
       method: 'PUT',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
@@ -91,7 +100,7 @@ describe.skipIf(!url)('Datos por usuario contra Postgres', () => {
     });
 
   it('edita un movimiento propio y puede borrar la nota', async () => {
-    const created = await app.request('/v1/transactions', {
+    const created = await req('/v1/transactions', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
@@ -128,17 +137,17 @@ describe.skipIf(!url)('Datos por usuario contra Postgres', () => {
 
   it('borra un movimiento propio una sola vez', async () => {
     const { id } = (await (await post(own.wallet, null)).json()) as { id: string };
-    const del = () => app.request(`/v1/transactions/${id}`, { method: 'DELETE' });
+    const del = () => req(`/v1/transactions/${id}`, { method: 'DELETE' });
     expect((await del()).status).toBe(204);
     expect((await del()).status).toBe(404);
   });
 
   it('responde 400 si el id no es un UUID', async () => {
-    expect((await app.request('/v1/transactions/abc', { method: 'DELETE' })).status).toBe(400);
+    expect((await req('/v1/transactions/abc', { method: 'DELETE' })).status).toBe(400);
   });
 
   const postCategory = (body: unknown) =>
-    app.request('/v1/categories', {
+    req('/v1/categories', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify(body),
@@ -149,7 +158,6 @@ describe.skipIf(!url)('Datos por usuario contra Postgres', () => {
     const first = await postCategory({ name, kind: 'expense' });
     expect(first.status).toBe(201);
     const { id } = (await first.json()) as { id: string };
-    categoryIds.push(id);
 
     const again = await postCategory({ name: `  ${name.toUpperCase()} `, kind: 'expense' });
     expect(again.status).toBe(200);
@@ -168,7 +176,7 @@ describe.skipIf(!url)('Datos por usuario contra Postgres', () => {
   });
 
   const putCategory = (id: string, name: string) =>
-    app.request(`/v1/categories/${id}`, {
+    req(`/v1/categories/${id}`, {
       method: 'PUT',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ name }),
@@ -179,7 +187,6 @@ describe.skipIf(!url)('Datos por usuario contra Postgres', () => {
     const { id } = (await (await postCategory({ name, kind: 'expense' })).json()) as {
       id: string;
     };
-    categoryIds.push(id);
     const res = await putCategory(id, `${name} 2`);
     expect(res.status).toBe(200);
     expect(await res.json()).toMatchObject({ name: `${name} 2`, kind: 'expense' });
@@ -193,21 +200,19 @@ describe.skipIf(!url)('Datos por usuario contra Postgres', () => {
       id: string;
     };
     const tx = (await (await post(own.wallet, id)).json()) as { id: string };
-    const del = () => app.request(`/v1/categories/${id}`, { method: 'DELETE' });
+    const del = () => req(`/v1/categories/${id}`, { method: 'DELETE' });
     expect((await del()).status).toBe(204);
     expect((await del()).status).toBe(404);
     const [row] = await db.select().from(transactions).where(eq(transactions.id, tx.id));
     expect(row?.categoryId).toBeNull();
-    expect(
-      (await app.request(`/v1/categories/${other.category}`, { method: 'DELETE' })).status,
-    ).toBe(404);
+    expect((await req(`/v1/categories/${other.category}`, { method: 'DELETE' })).status).toBe(404);
   });
 
   it.each([
     ['/v1/wallets', () => own.wallet, () => other.wallet],
     ['/v1/categories', () => own.category, () => other.category],
   ])('GET %s solo devuelve lo del usuario', async (path, ownId, otherId) => {
-    const ids = ((await (await app.request(path)).json()) as { id: string }[]).map((r) => r.id);
+    const ids = ((await (await req(path)).json()) as { id: string }[]).map((r) => r.id);
     expect(ids).toContain(ownId());
     expect(ids).not.toContain(otherId());
   });
@@ -218,19 +223,17 @@ describe.skipIf(!url)('Datos por usuario contra Postgres', () => {
       expenseMinor: string;
       byCategory: { name: string | null; amountMinor: string }[];
     };
-    const summary = async () =>
-      (await (await app.request('/v1/transactions/summary')).json()) as Summary;
+    const summary = async () => (await (await req('/v1/transactions/summary')).json()) as Summary;
     const name = `Resumen ${crypto.randomUUID().slice(0, 8)}`;
     const [cat] = await db
       .insert(categories)
-      .values({ userId: 'demo-user', name, kind: 'expense' })
+      .values({ userId: me.userId, name, kind: 'expense' })
       .returning();
     if (!cat) throw new Error('seed falló');
-    categoryIds.push(cat.id);
     const before = await summary();
 
     const tx = (kind: 'income' | 'expense', amountMinor: bigint, occurredAt: Date) => ({
-      userId: 'demo-user',
+      userId: me.userId,
       walletId: own.wallet,
       categoryId: kind === 'expense' ? cat.id : null,
       kind,

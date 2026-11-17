@@ -2,14 +2,10 @@ import { createMiddleware } from 'hono/factory';
 import { HTTPException } from 'hono/http-exception';
 import type { AppEnv } from '../lib/types';
 
-/**
- * Placeholder hasta integrar Better Auth (ver docs/adr y AGENTS.md).
- * En desarrollo usa un usuario demo; en producción rechaza todo.
- */
+/** Exige una sesión de Better Auth y deja el id del usuario en `c.var.userId`. */
 export const currentUser = createMiddleware<AppEnv>(async (c, next) => {
-  if (process.env.NODE_ENV === 'production') {
-    throw new HTTPException(401, { message: 'Autenticación no configurada' });
-  }
-  c.set('userId', 'demo-user');
+  const session = await c.var.auth.api.getSession({ headers: c.req.raw.headers });
+  if (!session) throw new HTTPException(401, { message: 'Inicia sesión para continuar' });
+  c.set('userId', session.user.id);
   await next();
 });

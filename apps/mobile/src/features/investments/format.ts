@@ -31,7 +31,8 @@ export function formatChange(gainMinor: string, baseMinor: string) {
   return `${sign}${formatMoney(abs)}${pct}`;
 }
 
-export const changeColor = (gainMinor: string) => {
+/** Clase de color del tema para una ganancia: verde, rojo o gris si es 0. */
+export const changeClass = (gainMinor: string) => {
   const gain = BigInt(gainMinor);
-  return gain > 0n ? '#1b5e20' : gain < 0n ? '#b00020' : '#555';
+  return gain > 0n ? 'text-positive' : gain < 0n ? 'text-negative' : 'text-secondary';
 };

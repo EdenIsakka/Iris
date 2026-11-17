@@ -1,5 +1,6 @@
 import { Link } from 'expo-router';
-import { Pressable, SectionList, StyleSheet, Text } from 'react-native';
+import { Pressable, SectionList, StyleSheet } from 'react-native';
+import { Text } from '@/components/ui/text';
 import { useCategories } from '../api';
 
 export function CategoryList() {

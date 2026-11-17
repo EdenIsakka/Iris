@@ -1,8 +1,9 @@
 import { formatMoney, type InvestmentPeriod } from '@finanzas/shared';
 import { Link } from 'expo-router';
-import { FlatList, Pressable, StyleSheet, Text } from 'react-native';
+import { FlatList, Pressable, StyleSheet } from 'react-native';
+import { Text } from '@/components/ui/text';
 import { useInvestments } from '../api';
-import { changeColor, formatChange, KIND_LABELS, PERIOD_CHANGE_LABELS } from '../format';
+import { changeClass, formatChange, KIND_LABELS, PERIOD_CHANGE_LABELS } from '../format';
 import { StatsBlock } from './investment-totals';
 
 export function InvestmentList({ period }: { period: InvestmentPeriod }) {
@@ -37,7 +38,7 @@ export function InvestmentList({ period }: { period: InvestmentPeriod }) {
               {item.name} · {KIND_LABELS[item.kind]}
             </Text>
             <Text>Vale {formatMoney(BigInt(item.valueMinor))}</Text>
-            <Text style={{ color: changeColor(item.periodGainMinor) }}>
+            <Text className={changeClass(item.periodGainMinor)}>
               {PERIOD_CHANGE_LABELS[period]}:{' '}
               {formatChange(item.periodGainMinor, item.periodBaseMinor)}
             </Text>

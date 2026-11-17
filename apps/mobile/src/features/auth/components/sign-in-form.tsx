@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { Text, TextInput } from '@/components/ui/text';
 import { authClient } from '@/lib/auth-client';
 
 /** Un solo formulario para entrar o crear cuenta con correo y contraseña. */

@@ -1,6 +1,7 @@
 import { createCategorySchema } from '@finanzas/shared';
 import { useState } from 'react';
-import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, View } from 'react-native';
+import { Text, TextInput } from '@/components/ui/text';
 import { useCategories, useDeleteCategory, useRenameCategory } from '../api';
 
 type Props = { id: string; onDone: () => void };

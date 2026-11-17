@@ -1,12 +1,13 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { Pressable } from 'react-native';
+import { Text } from '@/components/ui/text';
 import { authClient } from '@/lib/auth-client';
 
 export function SignOutButton() {
   const queryClient = useQueryClient();
   return (
     <Pressable
-      style={styles.button}
+      className="min-h-[50px] items-center justify-center rounded-2xl bg-card active:opacity-80"
       accessibilityRole="button"
       onPress={async () => {
         await authClient.signOut();
@@ -14,12 +15,7 @@ export function SignOutButton() {
         queryClient.clear();
       }}
     >
-      <Text style={styles.text}>Cerrar sesión</Text>
+      <Text className="text-[17px] text-negative">Cerrar sesión</Text>
     </Pressable>
   );
 }
-
-const styles = StyleSheet.create({
-  button: { minHeight: 44, alignItems: 'center', justifyContent: 'center' },
-  text: { color: '#b00020', fontWeight: '600' },
-});

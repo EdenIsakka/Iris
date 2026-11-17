@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { Pressable } from 'react-native';
+import { Text } from './text';
 
 type Props = { label: string; selected: boolean; onPress: () => void };
 
@@ -6,24 +7,13 @@ export function Chip({ label, selected, onPress }: Props) {
   return (
     <Pressable
       onPress={onPress}
-      style={[styles.chip, selected && styles.selected]}
+      className={`min-h-[44px] justify-center rounded-full px-4 ${selected ? 'bg-accent' : 'bg-fill'}`}
       accessibilityRole="button"
       accessibilityState={{ selected }}
     >
-      <Text style={selected ? styles.selectedText : undefined}>{label}</Text>
+      <Text className={`text-[15px] ${selected ? 'font-semibold text-on-accent' : ''}`}>
+        {label}
+      </Text>
     </Pressable>
   );
 }
-
-const styles = StyleSheet.create({
-  chip: {
-    minHeight: 44,
-    justifyContent: 'center',
-    paddingHorizontal: 14,
-    borderRadius: 22,
-    borderWidth: 1,
-    borderColor: '#999',
-  },
-  selected: { backgroundColor: '#1b5e20', borderColor: '#1b5e20' },
-  selectedText: { color: '#fff', fontWeight: '600' },
-});

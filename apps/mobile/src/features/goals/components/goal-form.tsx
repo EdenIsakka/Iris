@@ -1,7 +1,8 @@
 import { createGoalSchema } from '@finanzas/shared';
 import { type ReactNode, useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { AmountInput } from '@/components/ui/amount-input';
+import { Text, TextInput } from '@/components/ui/text';
 import { type Goal, useCreateGoal, useUpdateGoal } from '../api';
 
 type Props = {

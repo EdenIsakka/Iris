@@ -1,4 +1,5 @@
-import { Alert, Pressable, StyleSheet, Text } from 'react-native';
+import { Alert, Pressable, StyleSheet } from 'react-native';
+import { Text } from '@/components/ui/text';
 import { useDeleteInvestment, useInvestments } from '../api';
 import { InvestmentForm } from './investment-form';
 

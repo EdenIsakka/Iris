@@ -1,6 +1,7 @@
 import { formatMoney } from '@finanzas/shared';
 import { Link } from 'expo-router';
-import { FlatList, Pressable, Text, View } from 'react-native';
+import { FlatList, Pressable, View } from 'react-native';
+import { Text } from '@/components/ui/text';
 import { useTransactions } from '../api';
 
 export function TransactionList() {

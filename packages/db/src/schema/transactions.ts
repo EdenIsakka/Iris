@@ -10,7 +10,8 @@ export const transactions = pgTable(
     userId: text().notNull(),
     walletId: uuid()
       .notNull()
-      .references(() => wallets.id, { onDelete: 'cascade' }),
+      // restrict: una billetera con movimientos no se puede borrar.
+      .references(() => wallets.id, { onDelete: 'restrict' }),
     categoryId: uuid().references(() => categories.id, { onDelete: 'set null' }),
     kind: transactionKind().notNull(),
     amountMinor: money(),

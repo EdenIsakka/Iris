@@ -87,7 +87,7 @@ export function transactionsService(db: Db) {
           .where(thisMonth)
           .groupBy(transactions.kind),
         db
-          .select({ name: categories.name, amountMinor: total })
+          .select({ id: categories.id, name: categories.name, amountMinor: total })
           .from(transactions)
           .leftJoin(categories, eq(categories.id, transactions.categoryId))
           .where(and(thisMonth, eq(transactions.kind, 'expense')))

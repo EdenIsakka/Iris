@@ -7,6 +7,7 @@ import { type AuthOptions, createAuth } from './auth';
 import { categoriesRoutes } from './features/categories/categories.routes';
 import { goalsRoutes } from './features/goals/goals.routes';
 import { healthRoutes } from './features/health/health.routes';
+import { investmentsRoutes } from './features/investments/investments.routes';
 import { transactionsRoutes } from './features/transactions/transactions.routes';
 import { walletsRoutes } from './features/wallets/wallets.routes';
 import type { AppEnv } from './lib/types';
@@ -32,6 +33,7 @@ export function createApp({ db, corsOrigin, auth: authOptions }: Deps) {
     .use('/v1/*', currentUser)
     .route('/v1/transactions', transactionsRoutes)
     .route('/v1/goals', goalsRoutes)
+    .route('/v1/investments', investmentsRoutes)
     .route('/v1/wallets', walletsRoutes)
     .route('/v1/categories', categoriesRoutes);
 

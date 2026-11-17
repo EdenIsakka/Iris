@@ -1,5 +1,5 @@
 import { formatMoney } from '@finanzas/shared';
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { useMonthSummary } from '../api';
 
 export function MonthSummary() {
@@ -13,26 +13,28 @@ export function MonthSummary() {
   const expense = BigInt(data.expenseMinor);
   const balance = income - expense;
 
+  // Lista simple (no FlatList): son pocas categorías y Resumen ya hace scroll.
   return (
-    <FlatList
-      data={data.byCategory}
-      keyExtractor={(c, i) => `${c.name ?? ''}-${i}`}
-      ListHeaderComponent={
-        <View style={styles.totals}>
-          <Text style={styles.caption}>Este mes</Text>
-          <Row label="Ingresos" value={formatMoney(income)} />
-          <Row label="Gastos" value={formatMoney(expense)} />
-          <Row label="Balance" value={formatMoney(balance)} bold />
-          <Text style={[styles.caption, styles.section]} accessibilityRole="header">
-            Gastos por categoría
-          </Text>
-        </View>
-      }
-      ListEmptyComponent={<Text>Todavía no tienes gastos este mes.</Text>}
-      renderItem={({ item }) => (
-        <Row label={item.name ?? 'Sin categoría'} value={formatMoney(BigInt(item.amountMinor))} />
+    <View style={styles.totals}>
+      <Text style={styles.caption}>Este mes</Text>
+      <Row label="Ingresos" value={formatMoney(income)} />
+      <Row label="Gastos" value={formatMoney(expense)} />
+      <Row label="Balance" value={formatMoney(balance)} bold />
+      <Text style={[styles.caption, styles.section]} accessibilityRole="header">
+        Gastos por categoría
+      </Text>
+      {data.byCategory.length ? (
+        data.byCategory.map((c) => (
+          <Row
+            key={c.id ?? 'sin-categoria'}
+            label={c.name ?? 'Sin categoría'}
+            value={formatMoney(BigInt(c.amountMinor))}
+          />
+        ))
+      ) : (
+        <Text>Todavía no tienes gastos este mes.</Text>
       )}
-    />
+    </View>
   );
 }
 
@@ -47,7 +49,7 @@ function Row({ label, value, bold }: { label: string; value: string; bold?: bool
 }
 
 const styles = StyleSheet.create({
-  totals: { gap: 4, marginBottom: 4 },
+  totals: { gap: 4 },
   caption: { color: '#555', fontWeight: '600' },
   section: { marginTop: 16 },
   row: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 },

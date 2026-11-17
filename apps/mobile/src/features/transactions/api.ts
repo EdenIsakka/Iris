@@ -90,6 +90,39 @@ export function useCreateCategory() {
 
 const categoryKeys = { all: ['categories'] as const };
 
+export function useRenameCategory(id: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (name: string) => {
+      const res = await api.v1.categories[':id'].$put({ param: { id }, json: { name } });
+      // 409 lo lanza HTTPException, que el cliente tipado no conoce.
+      if ((res.status as number) === 409)
+        throw new Error('Ya tienes una categoría con ese nombre.');
+      if (!res.ok) throw new Error('No se pudo renombrar la categoría');
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: categoryKeys.all });
+      // El resumen muestra los nombres de las categorías.
+      queryClient.invalidateQueries({ queryKey: transactionKeys.all });
+    },
+  });
+}
+
+export function useDeleteCategory() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const res = await api.v1.categories[':id'].$delete({ param: { id } });
+      if (!res.ok) throw new Error('No se pudo borrar la categoría');
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: categoryKeys.all });
+      queryClient.invalidateQueries({ queryKey: transactionKeys.all });
+    },
+  });
+}
+
 export function useCategories() {
   return useQuery({
     queryKey: categoryKeys.all,

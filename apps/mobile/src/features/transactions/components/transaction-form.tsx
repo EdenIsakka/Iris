@@ -1,5 +1,6 @@
 import { createTransactionSchema } from '@finanzas/shared';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { Link } from 'expo-router';
 import { type ReactNode, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { AmountInput } from '@/components/ui/amount-input';
@@ -52,7 +53,8 @@ export function TransactionForm({ onSaved, transaction, footer }: Props) {
   function submit() {
     const parsed = createTransactionSchema.safeParse({
       walletId: selectedWallet,
-      categoryId,
+      // Si la categoría elegida se borró en "Administrar", el movimiento queda sin categoría.
+      categoryId: kindCategories.some((c) => c.id === categoryId) ? categoryId : null,
       kind,
       amountMinor: amount,
       currency: 'COP',
@@ -143,7 +145,14 @@ export function TransactionForm({ onSaved, transaction, footer }: Props) {
         </>
       ) : null}
 
-      <Text style={styles.label}>Categoría (opcional)</Text>
+      <View style={styles.labelRow}>
+        <Text style={styles.label}>Categoría (opcional)</Text>
+        <Link href="/categories" asChild>
+          <Pressable style={styles.manage} accessibilityRole="button">
+            <Text style={styles.manageText}>Administrar</Text>
+          </Pressable>
+        </Link>
+      </View>
       <View style={styles.row}>
         {kindCategories.map((c) => (
           <Chip
@@ -251,6 +260,9 @@ const styles = StyleSheet.create({
   form: { padding: 16, gap: 8 },
   row: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   label: { fontWeight: '600', marginTop: 8 },
+  labelRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
+  manage: { minHeight: 44, justifyContent: 'flex-end', paddingHorizontal: 4 },
+  manageText: { color: '#1b5e20', fontWeight: '600' },
   input: { borderWidth: 1, borderColor: '#999', borderRadius: 8, padding: 12, fontSize: 18 },
   newCategory: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   newCategoryInput: { flex: 1, fontSize: 16 },

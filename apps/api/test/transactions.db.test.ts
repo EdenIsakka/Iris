@@ -1,5 +1,5 @@
 import { categories, createDb, transactions, wallets } from '@finanzas/db';
-import { inArray } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createApp } from '../src/app';
 
@@ -165,6 +165,42 @@ describe.skipIf(!url)('Datos por usuario contra Postgres', () => {
 
   it('rechaza una categoría sin nombre', async () => {
     expect((await postCategory({ name: '   ', kind: 'expense' })).status).toBe(400);
+  });
+
+  const putCategory = (id: string, name: string) =>
+    app.request(`/v1/categories/${id}`, {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ name }),
+    });
+
+  it('renombra una categoría propia sin chocar con otra', async () => {
+    const name = `Renombrar ${crypto.randomUUID().slice(0, 8)}`;
+    const { id } = (await (await postCategory({ name, kind: 'expense' })).json()) as {
+      id: string;
+    };
+    categoryIds.push(id);
+    const res = await putCategory(id, `${name} 2`);
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({ name: `${name} 2`, kind: 'expense' });
+    expect((await putCategory(id, 'TEST')).status).toBe(409); // ya existe "Test" de gasto
+    expect((await putCategory(other.category, 'Otro')).status).toBe(404);
+  });
+
+  it('al borrar una categoría sus movimientos quedan sin categoría', async () => {
+    const name = `Borrar ${crypto.randomUUID().slice(0, 8)}`;
+    const { id } = (await (await postCategory({ name, kind: 'expense' })).json()) as {
+      id: string;
+    };
+    const tx = (await (await post(own.wallet, id)).json()) as { id: string };
+    const del = () => app.request(`/v1/categories/${id}`, { method: 'DELETE' });
+    expect((await del()).status).toBe(204);
+    expect((await del()).status).toBe(404);
+    const [row] = await db.select().from(transactions).where(eq(transactions.id, tx.id));
+    expect(row?.categoryId).toBeNull();
+    expect(
+      (await app.request(`/v1/categories/${other.category}`, { method: 'DELETE' })).status,
+    ).toBe(404);
   });
 
   it.each([

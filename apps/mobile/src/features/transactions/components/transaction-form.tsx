@@ -5,6 +5,7 @@ import { type ReactNode, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { AmountInput } from '@/components/ui/amount-input';
 import { Chip } from '@/components/ui/chip';
+import { useWallets } from '@/features/wallets/api';
 import { formatDate } from '@/lib/format-date';
 import {
   type Transaction,
@@ -12,7 +13,6 @@ import {
   useCreateCategory,
   useCreateTransaction,
   useUpdateTransaction,
-  useWallets,
 } from '../api';
 
 type Kind = 'expense' | 'income';

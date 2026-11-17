@@ -34,6 +34,9 @@ export default function RootLayout() {
           <Stack.Screen name="goals/new" options={modal('Nueva meta')} />
           <Stack.Screen name="goals/[id]/contribute" options={modal('Aportar a la meta')} />
           <Stack.Screen name="goals/[id]/edit" options={modal('Editar meta')} />
+          <Stack.Screen name="investments/new" options={modal('Nueva inversión')} />
+          <Stack.Screen name="investments/[id]/index" options={modal('Inversión')} />
+          <Stack.Screen name="investments/[id]/edit" options={modal('Editar inversión')} />
         </Stack.Protected>
       </Stack>
       <StatusBar style="auto" />

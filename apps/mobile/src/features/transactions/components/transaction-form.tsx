@@ -4,6 +4,8 @@ import { Link } from 'expo-router';
 import { type ReactNode, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { AmountInput } from '@/components/ui/amount-input';
+import { Chip } from '@/components/ui/chip';
+import { formatDate } from '@/lib/format-date';
 import {
   type Transaction,
   useCategories,
@@ -231,31 +233,6 @@ function isSameDay(date: Date, nDaysAgo: number) {
   return date.toDateString() === daysAgo(nDaysAgo).toDateString();
 }
 
-function formatDate(date: Date) {
-  return date.toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' });
-}
-
-function Chip({
-  label,
-  selected,
-  onPress,
-}: {
-  label: string;
-  selected: boolean;
-  onPress: () => void;
-}) {
-  return (
-    <Pressable
-      onPress={onPress}
-      style={[styles.chip, selected && styles.chipSelected]}
-      accessibilityRole="button"
-      accessibilityState={{ selected }}
-    >
-      <Text style={selected ? styles.chipTextSelected : undefined}>{label}</Text>
-    </Pressable>
-  );
-}
-
 const styles = StyleSheet.create({
   form: { padding: 16, gap: 8 },
   row: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
@@ -267,16 +244,6 @@ const styles = StyleSheet.create({
   newCategory: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   newCategoryInput: { flex: 1, fontSize: 16 },
   error: { color: '#b00020' },
-  chip: {
-    minHeight: 44,
-    justifyContent: 'center',
-    paddingHorizontal: 14,
-    borderRadius: 22,
-    borderWidth: 1,
-    borderColor: '#999',
-  },
-  chipSelected: { backgroundColor: '#1b5e20', borderColor: '#1b5e20' },
-  chipTextSelected: { color: '#fff', fontWeight: '600' },
   button: {
     marginTop: 16,
     minHeight: 48,

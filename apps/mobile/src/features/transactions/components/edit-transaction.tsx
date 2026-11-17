@@ -1,4 +1,5 @@
-import { Alert, Pressable, StyleSheet } from 'react-native';
+import { Alert } from 'react-native';
+import { Button } from '@/components/ui/form';
 import { Text } from '@/components/ui/text';
 import { useDeleteTransaction, useTransaction } from '../api';
 import { TransactionForm } from './transaction-form';
@@ -9,9 +10,9 @@ export function EditTransaction({ id, onDone }: Props) {
   const { data: transaction, isLoading, error } = useTransaction(id);
   const remove = useDeleteTransaction();
 
-  if (isLoading) return <Text style={styles.pad}>Cargando…</Text>;
-  if (error) return <Text style={styles.pad}>{error.message}</Text>;
-  if (!transaction) return <Text style={styles.pad}>No encontramos este movimiento.</Text>;
+  if (isLoading) return <Text className="p-4 text-secondary">Cargando…</Text>;
+  if (error) return <Text className="p-4">{error.message}</Text>;
+  if (!transaction) return <Text className="p-4">No encontramos este movimiento.</Text>;
 
   function confirmDelete() {
     Alert.alert('¿Borrar este movimiento?', 'No se puede deshacer.', [
@@ -33,32 +34,13 @@ export function EditTransaction({ id, onDone }: Props) {
       transaction={transaction}
       onSaved={onDone}
       footer={
-        <Pressable
-          style={styles.delete}
+        <Button
+          destructive
+          label={remove.isPending ? 'Borrando…' : 'Borrar movimiento'}
           onPress={confirmDelete}
           disabled={remove.isPending}
-          accessibilityRole="button"
-          accessibilityState={{ disabled: remove.isPending }}
-        >
-          <Text style={styles.deleteText}>
-            {remove.isPending ? 'Borrando…' : 'Borrar movimiento'}
-          </Text>
-        </Pressable>
+        />
       }
     />
   );
 }
-
-const styles = StyleSheet.create({
-  pad: { padding: 16 },
-  delete: {
-    marginTop: 8,
-    minHeight: 48,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#b00020',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  deleteText: { color: '#b00020', fontWeight: '700', fontSize: 16 },
-});

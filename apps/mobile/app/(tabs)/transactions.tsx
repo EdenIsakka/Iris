@@ -5,7 +5,7 @@ import { TransactionList } from '@/features/transactions/components/transaction-
 export default function TransactionsScreen() {
   return (
     <Screen title="Movimientos">
-      <LinkButton href="/transactions/new" label="+ Agregar movimiento" />
+      <LinkButton href="/transactions/new" label="Agregar movimiento" />
       <TransactionList />
     </Screen>
   );

@@ -2,9 +2,17 @@ import { createTransactionSchema } from '@finanzas/shared';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Link } from 'expo-router';
 import { type ReactNode, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { AmountInput } from '@/components/ui/amount-input';
 import { Chip } from '@/components/ui/chip';
+import {
+  Button,
+  FieldLabel,
+  Form,
+  FormError,
+  inputClassName,
+  Segmented,
+} from '@/components/ui/form';
 import { Text, TextInput } from '@/components/ui/text';
 import { useWallets } from '@/features/wallets/api';
 import { formatDate } from '@/lib/format-date';
@@ -45,10 +53,12 @@ export function TransactionForm({ onSaved, transaction, footer }: Props) {
   );
   const [pickingDate, setPickingDate] = useState(false);
 
-  if (wallets.isLoading || categories.isLoading) return <Text>Cargando…</Text>;
-  if (wallets.error) return <Text>{wallets.error.message}</Text>;
-  if (categories.error) return <Text>{categories.error.message}</Text>;
-  if (!wallets.data?.length) return <Text>Primero necesitas una billetera.</Text>;
+  if (wallets.isLoading || categories.isLoading) {
+    return <Text className="p-4 text-secondary">Cargando…</Text>;
+  }
+  if (wallets.error) return <Text className="p-4">{wallets.error.message}</Text>;
+  if (categories.error) return <Text className="p-4">{categories.error.message}</Text>;
+  if (!wallets.data?.length) return <Text className="p-4">Primero necesitas una billetera.</Text>;
 
   const selectedWallet = walletId ?? wallets.data[0]?.id ?? '';
   const kindCategories = (categories.data ?? []).filter((c) => c.kind === kind);
@@ -87,36 +97,32 @@ export function TransactionForm({ onSaved, transaction, footer }: Props) {
     );
   }
 
+  const chooseKind = (k: Kind) => {
+    setKind(k);
+    setCategoryId(null);
+  };
+  const otherDay = !isSameDay(date, 0) && !isSameDay(date, 1);
+
   return (
-    <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled">
-      <View style={styles.row}>
-        <Chip
-          label="Gasto"
-          selected={kind === 'expense'}
-          onPress={() => {
-            setKind('expense');
-            setCategoryId(null);
-          }}
-        />
-        <Chip
-          label="Ingreso"
-          selected={kind === 'income'}
-          onPress={() => {
-            setKind('income');
-            setCategoryId(null);
-          }}
-        />
-      </View>
+    <Form>
+      <Segmented
+        options={[
+          { value: 'expense', label: 'Gasto' },
+          { value: 'income', label: 'Ingreso' },
+        ]}
+        value={kind}
+        onChange={chooseKind}
+      />
 
       <AmountInput label="Monto (COP)" value={amount} onChangeValue={setAmount} autoFocus />
 
-      <Text style={styles.label}>Fecha</Text>
-      <View style={styles.row}>
+      <FieldLabel>Fecha</FieldLabel>
+      <View className="flex-row flex-wrap gap-2">
         <Chip label="Hoy" selected={isSameDay(date, 0)} onPress={() => setDate(daysAgo(0))} />
         <Chip label="Ayer" selected={isSameDay(date, 1)} onPress={() => setDate(daysAgo(1))} />
         <Chip
-          label={isSameDay(date, 0) || isSameDay(date, 1) ? 'Otra fecha' : formatDate(date)}
-          selected={!isSameDay(date, 0) && !isSameDay(date, 1)}
+          label={otherDay ? formatDate(date) : 'Otra fecha'}
+          selected={otherDay}
           onPress={() => setPickingDate(true)}
         />
       </View>
@@ -134,8 +140,8 @@ export function TransactionForm({ onSaved, transaction, footer }: Props) {
 
       {wallets.data.length > 1 ? (
         <>
-          <Text style={styles.label}>Billetera</Text>
-          <View style={styles.row}>
+          <FieldLabel>Billetera</FieldLabel>
+          <View className="flex-row flex-wrap gap-2">
             {wallets.data.map((w) => (
               <Chip
                 key={w.id}
@@ -148,15 +154,15 @@ export function TransactionForm({ onSaved, transaction, footer }: Props) {
         </>
       ) : null}
 
-      <View style={styles.labelRow}>
-        <Text style={styles.label}>Categoría (opcional)</Text>
+      <View className="flex-row items-end justify-between">
+        <FieldLabel>Categoría (opcional)</FieldLabel>
         <Link href="/categories" asChild>
-          <Pressable style={styles.manage} accessibilityRole="button">
-            <Text style={styles.manageText}>Administrar</Text>
+          <Pressable className="min-h-[44px] justify-end px-1" accessibilityRole="button">
+            <Text className="text-[15px] font-medium text-accent">Administrar</Text>
           </Pressable>
         </Link>
       </View>
-      <View style={styles.row}>
+      <View className="flex-row flex-wrap gap-2">
         {kindCategories.map((c) => (
           <Chip
             key={c.id}
@@ -170,9 +176,9 @@ export function TransactionForm({ onSaved, transaction, footer }: Props) {
         ) : null}
       </View>
       {newCategory !== null ? (
-        <View style={styles.newCategory}>
+        <View className="flex-row items-center gap-2">
           <TextInput
-            style={[styles.input, styles.newCategoryInput]}
+            className={`${inputClassName} flex-1 text-[17px]`}
             value={newCategory}
             onChangeText={setNewCategory}
             maxLength={40}
@@ -186,17 +192,11 @@ export function TransactionForm({ onSaved, transaction, footer }: Props) {
           <Chip label="Cancelar" selected={false} onPress={() => setNewCategory(null)} />
         </View>
       ) : null}
-      {createCategory.error ? (
-        <Text style={styles.error} accessibilityRole="alert">
-          {createCategory.error.message}
-        </Text>
-      ) : null}
+      <FormError message={createCategory.error?.message} />
 
-      <Text style={styles.label} nativeID="note-label">
-        Nota (opcional)
-      </Text>
+      <FieldLabel nativeID="note-label">Nota (opcional)</FieldLabel>
       <TextInput
-        style={styles.input}
+        className={`${inputClassName} text-[17px]`}
         value={note}
         onChangeText={setNote}
         maxLength={280}
@@ -204,23 +204,14 @@ export function TransactionForm({ onSaved, transaction, footer }: Props) {
         accessibilityLabelledBy="note-label"
       />
 
-      {error || create.error ? (
-        <Text style={styles.error} accessibilityRole="alert">
-          {error ?? create.error?.message}
-        </Text>
-      ) : null}
-
-      <Pressable
-        style={[styles.button, create.isPending && styles.buttonDisabled]}
+      <FormError message={error ?? create.error?.message} />
+      <Button
+        label={create.isPending ? 'Guardando…' : 'Guardar'}
         onPress={submit}
         disabled={create.isPending}
-        accessibilityRole="button"
-        accessibilityState={{ disabled: create.isPending }}
-      >
-        <Text style={styles.buttonText}>{create.isPending ? 'Guardando…' : 'Guardar'}</Text>
-      </Pressable>
+      />
       {footer}
-    </ScrollView>
+    </Form>
   );
 }
 
@@ -233,26 +224,3 @@ function daysAgo(n: number) {
 function isSameDay(date: Date, nDaysAgo: number) {
   return date.toDateString() === daysAgo(nDaysAgo).toDateString();
 }
-
-const styles = StyleSheet.create({
-  form: { padding: 16, gap: 8 },
-  row: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  label: { fontWeight: '600', marginTop: 8 },
-  labelRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
-  manage: { minHeight: 44, justifyContent: 'flex-end', paddingHorizontal: 4 },
-  manageText: { color: '#1b5e20', fontWeight: '600' },
-  input: { borderWidth: 1, borderColor: '#999', borderRadius: 8, padding: 12, fontSize: 18 },
-  newCategory: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  newCategoryInput: { flex: 1, fontSize: 16 },
-  error: { color: '#b00020' },
-  button: {
-    marginTop: 16,
-    minHeight: 48,
-    borderRadius: 8,
-    backgroundColor: '#1b5e20',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  buttonDisabled: { opacity: 0.6 },
-  buttonText: { color: '#fff', fontWeight: '700', fontSize: 16 },
-});

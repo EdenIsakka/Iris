@@ -1,6 +1,7 @@
 import { createCategorySchema } from '@finanzas/shared';
 import { useState } from 'react';
-import { Alert, Pressable, StyleSheet, View } from 'react-native';
+import { Alert } from 'react-native';
+import { Button, FieldLabel, Form, FormError, inputClassName } from '@/components/ui/form';
 import { Text, TextInput } from '@/components/ui/text';
 import { useCategories, useDeleteCategory, useRenameCategory } from '../api';
 
@@ -10,9 +11,9 @@ export function EditCategory({ id, onDone }: Props) {
   const { data, isLoading, error } = useCategories();
   const category = data?.find((c) => c.id === id);
   // Se monta con el nombre ya cargado: el formulario va en un componente aparte.
-  if (isLoading) return <Text style={styles.pad}>Cargando…</Text>;
-  if (error) return <Text style={styles.pad}>{error.message}</Text>;
-  if (!category) return <Text style={styles.pad}>No encontramos esta categoría.</Text>;
+  if (isLoading) return <Text className="p-4 text-secondary">Cargando…</Text>;
+  if (error) return <Text className="p-4">{error.message}</Text>;
+  if (!category) return <Text className="p-4">No encontramos esta categoría.</Text>;
   return <CategoryForm id={id} initialName={category.name} onDone={onDone} />;
 }
 
@@ -55,67 +56,28 @@ function CategoryForm({ id, initialName, onDone }: Props & { initialName: string
   const message = formError ?? rename.error?.message;
 
   return (
-    <View style={styles.form}>
-      <Text style={styles.label}>Nombre</Text>
+    <Form>
+      <FieldLabel nativeID="category-name-label">Nombre</FieldLabel>
       <TextInput
-        style={styles.input}
+        className={`${inputClassName} text-[17px]`}
         value={name}
         onChangeText={setName}
         maxLength={40}
-        accessibilityLabel="Nombre de la categoría"
+        accessibilityLabelledBy="category-name-label"
       />
-      {message ? (
-        <Text style={styles.error} accessibilityRole="alert">
-          {message}
-        </Text>
-      ) : null}
+      <FormError message={message} />
 
-      <Pressable
-        style={[styles.button, busy && styles.disabled]}
+      <Button
+        label={rename.isPending ? 'Guardando…' : 'Guardar'}
         onPress={submit}
         disabled={busy}
-        accessibilityRole="button"
-        accessibilityState={{ disabled: busy }}
-      >
-        <Text style={styles.buttonText}>{rename.isPending ? 'Guardando…' : 'Guardar'}</Text>
-      </Pressable>
-      <Pressable
-        style={[styles.delete, busy && styles.disabled]}
+      />
+      <Button
+        destructive
+        label={remove.isPending ? 'Borrando…' : 'Borrar categoría'}
         onPress={confirmDelete}
         disabled={busy}
-        accessibilityRole="button"
-        accessibilityState={{ disabled: busy }}
-      >
-        <Text style={styles.deleteText}>{remove.isPending ? 'Borrando…' : 'Borrar categoría'}</Text>
-      </Pressable>
-    </View>
+      />
+    </Form>
   );
 }
-
-const styles = StyleSheet.create({
-  pad: { padding: 16 },
-  form: { padding: 16, gap: 8 },
-  label: { fontWeight: '600', marginTop: 8 },
-  input: { borderWidth: 1, borderColor: '#999', borderRadius: 8, padding: 12, fontSize: 18 },
-  error: { color: '#b00020' },
-  button: {
-    marginTop: 16,
-    minHeight: 48,
-    borderRadius: 8,
-    backgroundColor: '#1b5e20',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  disabled: { opacity: 0.6 },
-  buttonText: { color: '#fff', fontWeight: '700', fontSize: 16 },
-  delete: {
-    marginTop: 8,
-    minHeight: 48,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#b00020',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  deleteText: { color: '#b00020', fontWeight: '700', fontSize: 16 },
-});

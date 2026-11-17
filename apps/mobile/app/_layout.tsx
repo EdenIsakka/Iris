@@ -34,6 +34,8 @@ export default function RootLayout() {
           <Stack.Screen name="goals/new" options={modal('Nueva meta')} />
           <Stack.Screen name="goals/[id]/contribute" options={modal('Aportar a la meta')} />
           <Stack.Screen name="goals/[id]/edit" options={modal('Editar meta')} />
+          <Stack.Screen name="budgets" options={modal('Topes de gasto')} />
+          <Stack.Screen name="budgets/[id]" options={modal('Tope de gasto')} />
           <Stack.Screen name="wallets/new" options={modal('Nueva billetera')} />
           <Stack.Screen name="wallets/[id]" options={modal('Editar billetera')} />
           <Stack.Screen name="investments/new" options={modal('Nueva inversión')} />

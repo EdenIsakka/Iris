@@ -1,9 +1,7 @@
 import { categories, type Db, transactions, wallets } from '@finanzas/db';
 import type { CreateTransactionInput } from '@finanzas/shared';
 import { and, desc, eq, gte, sql } from 'drizzle-orm';
-
-// shortcut: zona fija de Colombia (MVP solo COP); pasarla por usuario si se abre a otros países.
-const TZ = 'America/Bogota';
+import { monthStart } from '../../lib/month';
 
 /** Lógica de negocio sin saber nada de HTTP: fácil de probar y reutilizar. */
 // note null la borra al editar; undefined la dejaría como estaba.
@@ -75,10 +73,7 @@ export function transactionsService(db: Db) {
       const total = sql<bigint>`coalesce(sum(${transactions.amountMinor}), 0)`.mapWith(BigInt);
       const thisMonth = and(
         eq(transactions.userId, userId),
-        gte(
-          transactions.occurredAt,
-          sql`date_trunc('month', now() at time zone ${TZ}) at time zone ${TZ}`,
-        ),
+        gte(transactions.occurredAt, monthStart),
       );
       const [byKind, byCategory] = await Promise.all([
         db

@@ -4,6 +4,7 @@ import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { secureHeaders } from 'hono/secure-headers';
 import { type AuthOptions, createAuth } from './auth';
+import { budgetsRoutes } from './features/budgets/budgets.routes';
 import { categoriesRoutes } from './features/categories/categories.routes';
 import { goalsRoutes } from './features/goals/goals.routes';
 import { healthRoutes } from './features/health/health.routes';
@@ -35,7 +36,8 @@ export function createApp({ db, corsOrigin, auth: authOptions }: Deps) {
     .route('/v1/goals', goalsRoutes)
     .route('/v1/investments', investmentsRoutes)
     .route('/v1/wallets', walletsRoutes)
-    .route('/v1/categories', categoriesRoutes);
+    .route('/v1/categories', categoriesRoutes)
+    .route('/v1/budgets', budgetsRoutes);
 
   app.onError(errorHandler);
   return app;

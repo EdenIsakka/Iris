@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@better-auth/expo": "1.7.20",
+    "@expo/vector-icons": "^15.1.1",
     "@finanzas/api": "workspace:*",
     "@finanzas/shared": "workspace:*",
     "@react-native-community/datetimepicker": "9.2.1",

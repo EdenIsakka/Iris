@@ -43,4 +43,13 @@ describe('periodStart', () => {
     expect(periodStart('week', now).toISOString().slice(0, 10)).toBe('2026-03-24');
     expect(periodStart('year', now).toISOString().slice(0, 10)).toBe('2025-03-31');
   });
+
+  it('a fin de mes no se pasa al mes siguiente', () => {
+    const iso = (d: Date) => d.toISOString().slice(0, 10);
+    expect(iso(periodStart('month', now))).toBe('2026-02-28');
+    expect(iso(periodStart('month', day('2028-03-31')))).toBe('2028-02-29');
+    expect(iso(periodStart('month', day('2026-05-31')))).toBe('2026-04-30');
+    expect(iso(periodStart('year', day('2028-02-29')))).toBe('2027-02-28');
+    expect(iso(periodStart('month', day('2026-01-15')))).toBe('2025-12-15');
+  });
 });

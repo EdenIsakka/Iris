@@ -12,7 +12,7 @@ describe.skipIf(!url)('Datos por usuario contra Postgres', () => {
   const app = createApp({ db, corsOrigin: '*', auth: testAuth });
   let me: Awaited<ReturnType<typeof signUp>>;
   const req = (path: string, init?: RequestInit) => me.request(path, init);
-  const otherUser = `otro-${crypto.randomUUID()}`;
+  let otherUser = '';
   let own = { wallet: '', category: '' };
   let other = { wallet: '', category: '' };
 
@@ -28,6 +28,7 @@ describe.skipIf(!url)('Datos por usuario contra Postgres', () => {
 
   beforeAll(async () => {
     me = await signUp(app);
+    otherUser = (await signUp(app)).userId;
     own = await seedUser(me.userId);
     other = await seedUser(otherUser);
   });
@@ -122,7 +123,7 @@ describe.skipIf(!url)('Datos por usuario contra Postgres', () => {
     const [theirs] = await db
       .insert(transactions)
       .values({
-        userId: 'otro',
+        userId: otherUser,
         walletId: other.wallet,
         kind: 'expense',
         amountMinor: 1000n,
@@ -282,6 +283,27 @@ describe.skipIf(!url)('Datos por usuario contra Postgres', () => {
     }
     expect(seen).toHaveLength(mine.length);
     expect(new Set(seen).size).toBe(mine.length);
+  });
+
+  it('borrar un usuario se lleva sus billeteras, movimientos y categorías', async () => {
+    const gone = await signUp(app);
+    const [wallet] = (await (await gone.request('/v1/wallets')).json()) as { id: string }[];
+    await db.insert(transactions).values({
+      userId: gone.userId,
+      walletId: wallet?.id ?? '',
+      kind: 'expense',
+      amountMinor: 1n,
+      occurredAt: new Date(),
+    });
+
+    await deleteUsers(db, [gone.userId]);
+
+    const left = await Promise.all(
+      [transactions, wallets, categories].map((t) =>
+        db.select().from(t).where(eq(t.userId, gone.userId)),
+      ),
+    );
+    expect(left.map((rows) => rows.length)).toEqual([0, 0, 0]);
   });
 
   it('responde 400 si llega before sin beforeId', async () => {

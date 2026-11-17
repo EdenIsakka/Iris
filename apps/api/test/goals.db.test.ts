@@ -12,7 +12,7 @@ describe.skipIf(!url)('POST /v1/goals/:id/contributions contra Postgres', () => 
   const app = createApp({ db, corsOrigin: '*', auth: testAuth });
   let me: Awaited<ReturnType<typeof signUp>>;
   const req = (path: string, init?: RequestInit) => me.request(path, init);
-  const otherUser = `otro-${crypto.randomUUID()}`;
+  let otherUser = '';
   let own = '';
   let other = '';
 
@@ -27,6 +27,7 @@ describe.skipIf(!url)('POST /v1/goals/:id/contributions contra Postgres', () => 
 
   beforeAll(async () => {
     me = await signUp(app);
+    otherUser = (await signUp(app)).userId;
     own = await seedGoal(me.userId);
     other = await seedGoal(otherUser);
   });

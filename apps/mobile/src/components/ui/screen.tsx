@@ -1,14 +1,16 @@
 import type { ReactNode } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Text } from './text';
 
 type Props = { title: string; children: ReactNode };
 
+/** Pantalla de pestaña con título grande, como en iOS. */
 export function Screen({ title, children }: Props) {
   return (
-    <SafeAreaView style={styles.safe} edges={['top']}>
-      <View style={styles.body}>
-        <Text style={styles.title} accessibilityRole="header">
+    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+      <View className="flex-1 gap-3 px-4 pt-2">
+        <Text className="text-[34px] font-bold tracking-tight" accessibilityRole="header">
           {title}
         </Text>
         {children}
@@ -16,9 +18,3 @@ export function Screen({ title, children }: Props) {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  safe: { flex: 1 },
-  body: { flex: 1, padding: 16, gap: 12 },
-  title: { fontSize: 28, fontWeight: '700' },
-});

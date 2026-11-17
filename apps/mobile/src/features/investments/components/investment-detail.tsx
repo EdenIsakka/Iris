@@ -1,11 +1,12 @@
 import { formatMoney, type InvestmentPeriod } from '@finanzas/shared';
 import { Link } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { AmountInput } from '@/components/ui/amount-input';
+import { Text } from '@/components/ui/text';
 import { formatDate } from '@/lib/format-date';
 import { useContributeInvestment, useInvestments, useValuations, useValueInvestment } from '../api';
-import { changeColor, formatChange, KIND_LABELS } from '../format';
+import { changeClass, formatChange, KIND_LABELS } from '../format';
 import { StatsBlock } from './investment-totals';
 import { PeriodChips } from './period-chips';
 
@@ -62,7 +63,7 @@ function History({ id, period }: { id: string; period: InvestmentPeriod }) {
           <View key={v.id} style={styles.historyRow}>
             <Text style={styles.date}>{formatDate(new Date(v.occurredAt))}</Text>
             <Text>{formatMoney(BigInt(v.valueMinor))}</Text>
-            <Text style={[styles.diff, diff ? { color: changeColor(diff) } : undefined]}>
+            <Text style={styles.diff} className={diff ? changeClass(diff) : undefined}>
               {diff && prev ? formatChange(diff, prev.valueMinor) : 'Inicio'}
             </Text>
           </View>

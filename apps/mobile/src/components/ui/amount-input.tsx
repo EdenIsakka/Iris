@@ -1,5 +1,5 @@
 import { formatMoney } from '@finanzas/shared';
-import { StyleSheet, Text, TextInput } from 'react-native';
+import { Text, TextInput } from '@/components/ui/text';
 
 type Props = {
   label: string;
@@ -12,9 +12,9 @@ type Props = {
 export function AmountInput({ label, value, onChangeValue, autoFocus }: Props) {
   return (
     <>
-      <Text style={styles.label}>{label}</Text>
+      <Text className="mt-2 text-[15px] font-medium text-secondary">{label}</Text>
       <TextInput
-        style={styles.input}
+        className="rounded-xl bg-fill px-4 py-3 text-[20px] font-semibold"
         value={value}
         onChangeText={(t) => onChangeValue(t.replace(/\D/g, '').replace(/^0+/, ''))}
         keyboardType="number-pad"
@@ -23,13 +23,7 @@ export function AmountInput({ label, value, onChangeValue, autoFocus }: Props) {
         accessibilityLabel={label}
         autoFocus={autoFocus}
       />
-      {value ? <Text style={styles.hint}>{formatMoney(BigInt(value))}</Text> : null}
+      {value ? <Text className="text-secondary">{formatMoney(BigInt(value))}</Text> : null}
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  label: { fontWeight: '600', marginTop: 8 },
-  input: { borderWidth: 1, borderColor: '#999', borderRadius: 8, padding: 12, fontSize: 18 },
-  hint: { color: '#555' },
-});

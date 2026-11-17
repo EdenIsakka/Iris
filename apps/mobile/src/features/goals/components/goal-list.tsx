@@ -1,6 +1,7 @@
 import { formatMoney } from '@finanzas/shared';
 import { Link } from 'expo-router';
-import { FlatList, Pressable, Text } from 'react-native';
+import { FlatList, Pressable } from 'react-native';
+import { Text } from '@/components/ui/text';
 import { useGoals } from '../api';
 
 export function GoalList() {

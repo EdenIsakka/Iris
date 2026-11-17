@@ -2,9 +2,10 @@ import { createTransactionSchema } from '@finanzas/shared';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Link } from 'expo-router';
 import { type ReactNode, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { AmountInput } from '@/components/ui/amount-input';
 import { Chip } from '@/components/ui/chip';
+import { Text, TextInput } from '@/components/ui/text';
 import { useWallets } from '@/features/wallets/api';
 import { formatDate } from '@/lib/format-date';
 import {

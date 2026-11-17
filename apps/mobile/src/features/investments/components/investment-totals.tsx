@@ -1,8 +1,10 @@
 import { formatMoney, type InvestmentPeriod } from '@finanzas/shared';
 import { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Card, Row } from '@/components/ui/card';
+import { Text } from '@/components/ui/text';
 import { useInvestments } from '../api';
-import { changeColor, formatChange, PERIOD_CHANGE_LABELS } from '../format';
+import { changeClass, formatChange, PERIOD_CHANGE_LABELS } from '../format';
 import { PeriodChips } from './period-chips';
 
 type Stats = {
@@ -16,18 +18,18 @@ type Stats = {
 /** Valor, lo invertido y cómo le fue en el periodo: para el total o para una inversión. */
 export function StatsBlock({ stats, period }: { stats: Stats; period: InvestmentPeriod }) {
   return (
-    <View style={styles.block}>
-      <Row label="Vale hoy" value={formatMoney(BigInt(stats.valueMinor))} bold />
+    <View>
+      <Row label="Vale hoy" value={formatMoney(BigInt(stats.valueMinor))} strong />
       <Row label="Invertiste" value={formatMoney(BigInt(stats.investedMinor))} />
       <Row
         label="Ganancia total"
         value={formatChange(stats.gainMinor, stats.investedMinor)}
-        color={changeColor(stats.gainMinor)}
+        valueClassName={`font-medium ${changeClass(stats.gainMinor)}`}
       />
       <Row
         label={PERIOD_CHANGE_LABELS[period]}
         value={formatChange(stats.periodGainMinor, stats.periodBaseMinor)}
-        color={changeColor(stats.periodGainMinor)}
+        valueClassName={`font-medium ${changeClass(stats.periodGainMinor)}`}
       />
     </View>
   );
@@ -36,9 +38,11 @@ export function StatsBlock({ stats, period }: { stats: Stats; period: Investment
 /** Totales de todas las inversiones; se usa en Resumen y en la pestaña Inversiones. */
 export function InvestmentTotals({ period }: { period: InvestmentPeriod }) {
   const { data, isLoading, error } = useInvestments(period);
-  if (isLoading) return <Text>Cargando…</Text>;
+  if (isLoading) return <Text className="text-secondary">Cargando…</Text>;
   if (error) return <Text>{error.message}</Text>;
-  if (!data?.items.length) return <Text>Todavía no registras inversiones.</Text>;
+  if (!data?.items.length) {
+    return <Text className="py-1 text-secondary">Todavía no registras inversiones.</Text>;
+  }
   return <StatsBlock stats={data.totals} period={period} />;
 }
 
@@ -46,40 +50,11 @@ export function InvestmentTotals({ period }: { period: InvestmentPeriod }) {
 export function InvestmentsSummary() {
   const [period, setPeriod] = useState<InvestmentPeriod>('month');
   return (
-    <View style={styles.block}>
-      <Text style={styles.caption} accessibilityRole="header">
-        Inversiones
-      </Text>
-      <PeriodChips value={period} onChange={setPeriod} />
+    <Card title="Inversiones">
+      <View className="pb-1 pt-1">
+        <PeriodChips value={period} onChange={setPeriod} />
+      </View>
       <InvestmentTotals period={period} />
-    </View>
+    </Card>
   );
 }
-
-function Row({
-  label,
-  value,
-  bold,
-  color,
-}: {
-  label: string;
-  value: string;
-  bold?: boolean;
-  color?: string;
-}) {
-  return (
-    <View style={styles.row}>
-      <Text style={bold ? styles.bold : undefined}>{label}</Text>
-      <Text style={[bold && styles.bold, color ? { color, fontWeight: '600' } : undefined]}>
-        {value}
-      </Text>
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  block: { gap: 4 },
-  caption: { color: '#555', fontWeight: '600' },
-  row: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 4, gap: 8 },
-  bold: { fontWeight: '700' },
-});

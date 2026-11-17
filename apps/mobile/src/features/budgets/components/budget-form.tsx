@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
+import { Pressable, ScrollView, StyleSheet } from 'react-native';
 import { AmountInput } from '@/components/ui/amount-input';
+import { Text } from '@/components/ui/text';
 import { useCategories } from '@/features/transactions/api';
 import { useBudgets, useDeleteBudget, useSaveBudget } from '../api';
 

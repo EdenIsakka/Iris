@@ -1,23 +1,16 @@
 import { type Href, Link } from 'expo-router';
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { Pressable } from 'react-native';
+import { Text } from './text';
 
 export function LinkButton({ href, label }: { href: Href; label: string }) {
   return (
     <Link href={href} asChild>
-      <Pressable style={styles.button} accessibilityRole="button">
-        <Text style={styles.text}>{label}</Text>
+      <Pressable
+        className="min-h-[50px] items-center justify-center rounded-xl bg-accent active:opacity-80"
+        accessibilityRole="button"
+      >
+        <Text className="text-[17px] font-semibold text-on-accent">{label}</Text>
       </Pressable>
     </Link>
   );
 }
-
-const styles = StyleSheet.create({
-  button: {
-    minHeight: 48,
-    borderRadius: 8,
-    backgroundColor: '#1b5e20',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  text: { color: '#fff', fontWeight: '700', fontSize: 16 },
-});

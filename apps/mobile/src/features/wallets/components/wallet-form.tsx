@@ -1,8 +1,9 @@
 import { createWalletSchema, type WalletType, walletType } from '@finanzas/shared';
 import { type ReactNode, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { AmountInput } from '@/components/ui/amount-input';
 import { Chip } from '@/components/ui/chip';
+import { Text, TextInput } from '@/components/ui/text';
 import { useSaveWallet, type Wallet } from '../api';
 import { TYPE_LABELS } from '../labels';
 

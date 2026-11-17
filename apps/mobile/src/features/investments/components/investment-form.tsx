@@ -6,9 +6,10 @@ import {
 } from '@finanzas/shared';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { type ReactNode, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { AmountInput } from '@/components/ui/amount-input';
 import { Chip } from '@/components/ui/chip';
+import { Text, TextInput } from '@/components/ui/text';
 import { formatDate } from '@/lib/format-date';
 import { type Investment, useCreateInvestment, useUpdateInvestment } from '../api';
 import { KIND_LABELS } from '../format';

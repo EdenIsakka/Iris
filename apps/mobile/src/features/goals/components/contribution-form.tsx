@@ -1,8 +1,9 @@
 import { contributeToGoalSchema, formatMoney } from '@finanzas/shared';
 import { Link } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { AmountInput } from '@/components/ui/amount-input';
+import { Text } from '@/components/ui/text';
 import { useContribute, useGoals } from '../api';
 
 type Props = { goalId: string; onSaved: () => void };

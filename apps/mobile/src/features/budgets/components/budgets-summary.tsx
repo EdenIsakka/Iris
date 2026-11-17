@@ -1,39 +1,48 @@
 import { formatMoney } from '@finanzas/shared';
 import { Link } from 'expo-router';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
+import { Card, CardAction } from '@/components/ui/card';
+import { Text } from '@/components/ui/text';
 import { type Budget, useBudgets } from '../api';
 
 /** Gastado contra el tope de cada categoría este mes. Va en Resumen. */
 export function BudgetsSummary() {
   const { data, isLoading, error } = useBudgets();
-  if (isLoading) return <Text>Cargando…</Text>;
+  if (isLoading) return <Text className="text-secondary">Cargando…</Text>;
   if (error) return <Text>{error.message}</Text>;
   const budgets = data ?? [];
 
   return (
-    <View style={styles.block}>
-      <Text style={styles.caption} accessibilityRole="header">
-        Topes del mes
-      </Text>
+    <Card title="Topes del mes">
       {budgets.length ? (
         budgets.map((b) => <BudgetRow key={b.categoryId} budget={b} />)
       ) : (
-        <Text>Aún no tienes topes de gasto.</Text>
+        <Text className="py-1 text-secondary">Aún no tienes topes de gasto.</Text>
       )}
       <Link href="/budgets" asChild>
-        <Pressable style={styles.link} accessibilityRole="button">
-          <Text style={styles.linkText}>Editar topes</Text>
+        <Pressable
+          className="min-h-[44px] justify-center border-t border-separator"
+          accessibilityRole="button"
+        >
+          <CardAction label="Editar topes" />
         </Pressable>
       </Link>
-    </View>
+    </Card>
   );
 }
+
+// Clases completas: Tailwind no ve las que se arman por partes (`bg-${x}`).
+const TONES = {
+  ok: { bar: 'bg-positive', text: 'text-positive' },
+  near: { bar: 'bg-warning', text: 'text-warning' },
+  over: { bar: 'bg-negative', text: 'text-negative' },
+};
 
 function BudgetRow({ budget }: { budget: Budget }) {
   const spent = BigInt(budget.spentMinor);
   const limit = BigInt(budget.limitMinor);
   const pct = Number((spent * 100n) / limit);
-  const color = pct > 100 ? '#b00020' : pct >= 80 ? '#b26a00' : '#1b5e20';
+  const tone = TONES[pct > 100 ? 'over' : pct >= 80 ? 'near' : 'ok'];
   // El texto dice el estado; el color solo lo refuerza.
   const status =
     spent > limit
@@ -41,35 +50,22 @@ function BudgetRow({ budget }: { budget: Budget }) {
       : `Quedan ${formatMoney(limit - spent)}`;
 
   return (
-    <View style={styles.row}>
-      <View style={styles.line}>
-        <Text style={styles.name}>{budget.name}</Text>
-        <Text>
+    <View className="gap-1.5 py-2">
+      <View className="flex-row justify-between">
+        <Text className="text-[15px] font-medium">{budget.name}</Text>
+        <Text className="text-[15px] text-secondary">
           {formatMoney(spent)} de {formatMoney(limit)}
         </Text>
       </View>
       <View
-        style={styles.track}
+        className="h-1.5 overflow-hidden rounded-full bg-fill"
         accessibilityRole="progressbar"
         accessibilityLabel={`${budget.name}: ${status}`}
         accessibilityValue={{ min: 0, max: 100, now: Math.min(pct, 100) }}
       >
-        <View style={[styles.fill, { width: `${Math.min(pct, 100)}%`, backgroundColor: color }]} />
+        <View className={`h-1.5 ${tone.bar}`} style={{ width: `${Math.min(pct, 100)}%` }} />
       </View>
-      <Text style={[styles.status, { color }]}>{status}</Text>
+      <Text className={`text-[13px] font-medium ${tone.text}`}>{status}</Text>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  block: { gap: 8 },
-  caption: { color: '#555', fontWeight: '600' },
-  row: { gap: 4 },
-  line: { flexDirection: 'row', justifyContent: 'space-between' },
-  name: { fontWeight: '600' },
-  track: { height: 8, borderRadius: 4, backgroundColor: '#e0e0e0', overflow: 'hidden' },
-  fill: { height: 8 },
-  status: { fontSize: 13, fontWeight: '600' },
-  link: { minHeight: 44, justifyContent: 'center' },
-  linkText: { color: '#1b5e20', fontWeight: '600' },
-});

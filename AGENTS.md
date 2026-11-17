@@ -22,5 +22,5 @@ Gestor de finanzas personales mobile-first. Monorepo pnpm + Turborepo.
 
 ## Pendiente
 
-- Integrar Better Auth (reemplaza `apps/api/src/middleware/current-user.ts`).
+- Llave foránea de `user_id` a `users` (ver `docs/adr/0006`).
 - NativeWind y Victory Native en la app.

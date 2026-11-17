@@ -1,5 +1,6 @@
 import { index, pgEnum, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { currency, id, money, timestamps } from './_shared';
+import { ownerId } from './auth';
 
 export const investmentKind = pgEnum('investment_kind', [
   'crypto',
@@ -11,7 +12,7 @@ export const investmentKind = pgEnum('investment_kind', [
 
 export const investments = pgTable('investments', {
   id: id(),
-  userId: text().notNull(),
+  userId: ownerId(),
   name: text().notNull(),
   kind: investmentKind().notNull(),
   currency: currency(),

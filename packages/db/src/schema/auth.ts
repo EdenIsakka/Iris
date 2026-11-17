@@ -13,6 +13,12 @@ export const users = pgTable('users', {
   ...timestamps,
 });
 
+/** Dueño de la fila: al borrar el usuario se borran sus datos (ADR-0007). */
+export const ownerId = () =>
+  text()
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' });
+
 export const sessions = pgTable(
   'sessions',
   {

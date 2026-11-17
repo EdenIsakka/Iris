@@ -22,5 +22,4 @@ Gestor de finanzas personales mobile-first. Monorepo pnpm + Turborepo.
 
 ## Pendiente
 
-- Llave foránea de `user_id` a `users` (ver `docs/adr/0006`).
-- NativeWind y Victory Native en la app.
+- NativeWind en la app (Victory Native ya está, fijo en 42.x: ver `renovate.json`).

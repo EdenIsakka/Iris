@@ -1,16 +1,15 @@
 import { Alert, Pressable, StyleSheet, Text } from 'react-native';
-import { useDeleteTransaction, useTransactions } from '../api';
+import { useDeleteTransaction, useTransaction } from '../api';
 import { TransactionForm } from './transaction-form';
 
 type Props = { id: string; onDone: () => void };
 
 export function EditTransaction({ id, onDone }: Props) {
-  const { data, isLoading, error } = useTransactions();
+  const { data: transaction, isLoading, error } = useTransaction(id);
   const remove = useDeleteTransaction();
 
   if (isLoading) return <Text style={styles.pad}>Cargando…</Text>;
   if (error) return <Text style={styles.pad}>{error.message}</Text>;
-  const transaction = data?.find((t) => t.id === id);
   if (!transaction) return <Text style={styles.pad}>No encontramos este movimiento.</Text>;
 
   function confirmDelete() {

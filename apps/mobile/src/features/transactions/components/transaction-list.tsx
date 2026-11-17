@@ -4,16 +4,27 @@ import { FlatList, Pressable, Text, View } from 'react-native';
 import { useTransactions } from '../api';
 
 export function TransactionList() {
-  const { data, isLoading, error } = useTransactions();
+  const { data, isLoading, error, hasNextPage, fetchNextPage, isFetchingNextPage } =
+    useTransactions();
 
   if (isLoading) return <Text>Cargando…</Text>;
-  if (error) return <Text>{error.message}</Text>;
+  if (error && !data) return <Text>{error.message}</Text>;
 
   return (
     <FlatList
-      data={data ?? []}
+      data={data?.pages.flat() ?? []}
       keyExtractor={(t) => t.id}
       ListEmptyComponent={<Text>Aún no tienes movimientos.</Text>}
+      onEndReached={() => {
+        if (hasNextPage && !isFetchingNextPage) fetchNextPage();
+      }}
+      ListFooterComponent={
+        isFetchingNextPage ? (
+          <Text>Cargando más…</Text>
+        ) : error ? (
+          <Text accessibilityRole="alert">{error.message}</Text>
+        ) : undefined
+      }
       renderItem={({ item }) => (
         <Link href={{ pathname: '/transactions/[id]', params: { id: item.id } }} asChild>
           <Pressable

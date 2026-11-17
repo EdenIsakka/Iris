@@ -21,4 +21,16 @@ export const createTransactionSchema = z.object({
   note: z.string().max(280).optional(),
 });
 
+/** Movimientos por página: si llega una página llena, puede haber más. */
+export const TRANSACTIONS_PAGE_SIZE = 50;
+
+/**
+ * Página siguiente de movimientos: los anteriores al último que ya se mostró.
+ * Va la fecha y el id porque varios movimientos pueden tener la misma fecha.
+ */
+export const transactionsPageQuery = z
+  .object({ before: z.iso.datetime().optional(), beforeId: z.uuid().optional() })
+  .refine((q) => !q.before === !q.beforeId, 'Manda before y beforeId juntos');
+
 export type CreateTransactionInput = z.infer<typeof createTransactionSchema>;
+export type TransactionsPageQuery = z.infer<typeof transactionsPageQuery>;

@@ -1,5 +1,9 @@
 import { categories, type Db, transactions, wallets } from '@finanzas/db';
-import type { CreateTransactionInput } from '@finanzas/shared';
+import {
+  type CreateTransactionInput,
+  TRANSACTIONS_PAGE_SIZE,
+  type TransactionsPageQuery,
+} from '@finanzas/shared';
 import { and, desc, eq, gte, sql } from 'drizzle-orm';
 import { monthStart } from '../../lib/month';
 
@@ -38,13 +42,30 @@ export function transactionsService(db: Db) {
   }
 
   return {
-    list(userId: string, limit = 50) {
+    /** Una página, de la más nueva a la más vieja; `page` dice desde dónde seguir. */
+    list(userId: string, page: TransactionsPageQuery = {}, limit = TRANSACTIONS_PAGE_SIZE) {
       return db
         .select()
         .from(transactions)
-        .where(eq(transactions.userId, userId))
-        .orderBy(desc(transactions.occurredAt))
+        .where(
+          and(
+            eq(transactions.userId, userId),
+            page.before && page.beforeId
+              ? sql`(${transactions.occurredAt}, ${transactions.id}) < (${page.before}::timestamptz, ${page.beforeId}::uuid)`
+              : undefined,
+          ),
+        )
+        .orderBy(desc(transactions.occurredAt), desc(transactions.id))
         .limit(limit);
+    },
+
+    /** null si no existe o es de otro usuario. */
+    async get(userId: string, id: string) {
+      const [row] = await db
+        .select()
+        .from(transactions)
+        .where(and(eq(transactions.id, id), eq(transactions.userId, userId)));
+      return row ?? null;
     },
 
     /** Devuelve null si la billetera o la categoría no existen, son de otro usuario o la categoría es de otro tipo. */

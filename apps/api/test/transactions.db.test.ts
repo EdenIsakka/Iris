@@ -256,4 +256,48 @@ describe.skipIf(!url)('Datos por usuario contra Postgres', () => {
     expect(BigInt(after.incomeMinor) - BigInt(before.incomeMinor)).toBe(5000n);
     expect(after.byCategory.find((c) => c.name === name)?.amountMinor).toBe('1000');
   });
+
+  it('pagina todos los movimientos sin repetir ni saltar, aunque compartan fecha', async () => {
+    const sameDate = new Date('2026-06-01T12:00:00Z');
+    await db.insert(transactions).values(
+      Array.from({ length: 55 }, () => ({
+        userId: me.userId,
+        walletId: own.wallet,
+        kind: 'expense' as const,
+        amountMinor: 1n,
+        occurredAt: sameDate,
+      })),
+    );
+    const mine = await db.select().from(transactions).where(eq(transactions.userId, me.userId));
+
+    type Row = { id: string; occurredAt: string };
+    const seen: string[] = [];
+    let query = '';
+    for (;;) {
+      const page = (await (await req(`/v1/transactions${query}`)).json()) as Row[];
+      seen.push(...page.map((t) => t.id));
+      const last = page.at(-1);
+      if (page.length < 50 || !last) break;
+      query = `?before=${encodeURIComponent(last.occurredAt)}&beforeId=${last.id}`;
+    }
+    expect(seen).toHaveLength(mine.length);
+    expect(new Set(seen).size).toBe(mine.length);
+  });
+
+  it('responde 400 si llega before sin beforeId', async () => {
+    expect((await req('/v1/transactions?before=2026-06-01T12:00:00Z')).status).toBe(400);
+  });
+
+  it('trae un movimiento propio por id, pero no el de otro usuario', async () => {
+    const { id } = (await (await post(own.wallet, null)).json()) as { id: string };
+    const res = await req(`/v1/transactions/${id}`);
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({ id, amountMinor: '1000' });
+
+    const [theirs] = await db
+      .select({ id: transactions.id })
+      .from(transactions)
+      .where(eq(transactions.walletId, other.wallet));
+    expect((await req(`/v1/transactions/${theirs?.id}`)).status).toBe(404);
+  });
 });

@@ -1,4 +1,4 @@
-import { categories, type Db, goals, users, wallets } from '@finanzas/db';
+import { categories, type Db, goals, investments, users, wallets } from '@finanzas/db';
 import { inArray } from 'drizzle-orm';
 import type { createApp } from '../src/app';
 
@@ -37,5 +37,6 @@ export async function deleteUsers(db: Db, ids: string[]) {
   await db.delete(wallets).where(inArray(wallets.userId, ids));
   await db.delete(categories).where(inArray(categories.userId, ids));
   await db.delete(goals).where(inArray(goals.userId, ids));
+  await db.delete(investments).where(inArray(investments.userId, ids));
   await db.delete(users).where(inArray(users.id, ids));
 }

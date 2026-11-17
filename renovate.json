@@ -3,9 +3,25 @@
   "extends": ["config:recommended", ":semanticCommits", "group:monorepos"],
   "packageRules": [
     {
-      "matchPackageNames": ["expo", "expo-*", "react-native", "react", "react-dom"],
+      "description": "Versiones atadas al SDK de Expo (y a Expo Go): se suben con `expo install` junto con el SDK.",
+      "matchPackageNames": [
+        "expo",
+        "expo-*",
+        "react-native",
+        "react",
+        "react-dom",
+        "@shopify/react-native-skia",
+        "react-native-reanimated",
+        "react-native-gesture-handler",
+        "react-native-worklets"
+      ],
       "groupName": "expo sdk",
       "enabled": false
+    },
+    {
+      "description": "victory-native 43 usa react-native-skia en vez de @shopify/react-native-skia: dos copias de Skia y la app se cae.",
+      "matchPackageNames": ["victory-native"],
+      "allowedVersions": "<43"
     }
   ]
 }

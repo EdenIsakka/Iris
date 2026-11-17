@@ -59,6 +59,18 @@ export function useMonthSummary() {
   });
 }
 
+/** Ingresos y gastos de los últimos 6 meses; cuelga de transactionKeys.all como el resumen. */
+export function useMonthlyTotals() {
+  return useQuery({
+    queryKey: [...transactionKeys.all, 'monthly'],
+    queryFn: async () => {
+      const res = await api.v1.transactions.monthly.$get();
+      if (!res.ok) throw new Error('No se pudo cargar la gráfica');
+      return res.json();
+    },
+  });
+}
+
 export function useCreateTransaction() {
   const queryClient = useQueryClient();
   return useMutation({

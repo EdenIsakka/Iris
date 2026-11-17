@@ -15,6 +15,11 @@ export const transactionsRoutes = new Hono<AppEnv>()
     const s = await transactionsService(c.var.db).monthSummary(c.var.userId);
     return c.json({ ...serializeMoney(s), byCategory: s.byCategory.map(serializeMoney) });
   })
+  .get('/monthly', async (c) => {
+    const rows = await transactionsService(c.var.db).monthly(c.var.userId);
+    return c.json(rows.map(serializeMoney));
+  })
+  // Después de /summary y /monthly para que no se lean como un :id.
   .get('/:id', zValidator('param', idParamSchema), async (c) => {
     const row = await transactionsService(c.var.db).get(c.var.userId, c.req.valid('param').id);
     if (!row) throw new HTTPException(404, { message: 'Movimiento no encontrado' });

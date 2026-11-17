@@ -14,10 +14,12 @@
     "./client": "./src/client.ts"
   },
   "dependencies": {
+    "@better-auth/expo": "1.7.20",
     "@finanzas/db": "workspace:*",
     "@finanzas/shared": "workspace:*",
     "@hono/node-server": "^1.19.0",
     "@hono/zod-validator": "^0.9.1",
+    "better-auth": "1.7.20",
     "drizzle-orm": "^0.45.4",
     "hono": "^4.13.18",
     "zod": "^4.6.7"

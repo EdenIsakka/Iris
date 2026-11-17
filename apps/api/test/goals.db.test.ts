@@ -1,15 +1,18 @@
 import { createDb, goals } from '@finanzas/db';
-import { eq, inArray } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createApp } from '../src/app';
+import { deleteUsers, signUp, testAuth } from './helpers';
 
 // Necesita Postgres con migraciones: corre en CI y en local con DATABASE_URL definida.
 const url = process.env.DATABASE_URL;
 
 describe.skipIf(!url)('POST /v1/goals/:id/contributions contra Postgres', () => {
   const db = createDb(url ?? '');
-  const app = createApp({ db, corsOrigin: '*' });
-  const goalIds: string[] = [];
+  const app = createApp({ db, corsOrigin: '*', auth: testAuth });
+  let me: Awaited<ReturnType<typeof signUp>>;
+  const req = (path: string, init?: RequestInit) => me.request(path, init);
+  const otherUser = `otro-${crypto.randomUUID()}`;
   let own = '';
   let other = '';
 
@@ -19,23 +22,22 @@ describe.skipIf(!url)('POST /v1/goals/:id/contributions contra Postgres', () => 
       .values({ userId, name: 'Test', targetMinor: 100000n })
       .returning();
     if (!g) throw new Error('seed falló');
-    goalIds.push(g.id);
     return g.id;
   }
 
   beforeAll(async () => {
-    own = await seedGoal('demo-user'); // el usuario que pone el middleware en desarrollo
-    other = await seedGoal(`otro-${crypto.randomUUID()}`);
+    me = await signUp(app);
+    own = await seedGoal(me.userId);
+    other = await seedGoal(otherUser);
   });
 
   afterAll(async () => {
-    // La cascada de goals borra los aportes creados aquí.
-    await db.delete(goals).where(inArray(goals.id, goalIds));
+    await deleteUsers(db, [me.userId, otherUser]);
     await db.$client.end();
   });
 
   const contribute = (goalId: string, amountMinor: string) =>
-    app.request(`/v1/goals/${goalId}/contributions`, {
+    req(`/v1/goals/${goalId}/contributions`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ amountMinor }),
@@ -43,7 +45,7 @@ describe.skipIf(!url)('POST /v1/goals/:id/contributions contra Postgres', () => 
 
   it('suma el aporte a la meta propia', async () => {
     expect((await contribute(own, '2500')).status).toBe(201);
-    const list = (await (await app.request('/v1/goals')).json()) as {
+    const list = (await (await req('/v1/goals')).json()) as {
       id: string;
       savedMinor: string;
     }[];
@@ -53,10 +55,9 @@ describe.skipIf(!url)('POST /v1/goals/:id/contributions contra Postgres', () => 
   it('marca la meta como cumplida al llegar al 100 %', async () => {
     const [g] = await db
       .insert(goals)
-      .values({ userId: 'demo-user', name: 'Corta', targetMinor: 3000n })
+      .values({ userId: me.userId, name: 'Corta', targetMinor: 3000n })
       .returning();
     if (!g) throw new Error('seed falló');
-    goalIds.push(g.id);
     const status = async () =>
       (await db.select({ s: goals.status }).from(goals).where(eq(goals.id, g.id)))[0]?.s;
 
@@ -79,14 +80,14 @@ describe.skipIf(!url)('POST /v1/goals/:id/contributions contra Postgres', () => 
   });
 
   const put = (id: string, targetMinor: string) =>
-    app.request(`/v1/goals/${id}`, {
+    req(`/v1/goals/${id}`, {
       method: 'PUT',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ name: ' Nueva ', targetMinor }),
     });
 
   it('edita la meta y recalcula si quedó cumplida', async () => {
-    const id = await seedGoal('demo-user');
+    const id = await seedGoal(me.userId);
     await contribute(id, '5000');
     const lower = await put(id, '5000');
     expect(lower.status).toBe(200);
@@ -96,19 +97,19 @@ describe.skipIf(!url)('POST /v1/goals/:id/contributions contra Postgres', () => 
 
   it('no edita ni borra la meta de otro usuario', async () => {
     expect((await put(other, '5000')).status).toBe(404);
-    expect((await app.request(`/v1/goals/${other}`, { method: 'DELETE' })).status).toBe(404);
+    expect((await req(`/v1/goals/${other}`, { method: 'DELETE' })).status).toBe(404);
   });
 
   it('borra una meta propia una sola vez', async () => {
-    const id = await seedGoal('demo-user');
+    const id = await seedGoal(me.userId);
     await contribute(id, '1000');
-    const del = () => app.request(`/v1/goals/${id}`, { method: 'DELETE' });
+    const del = () => req(`/v1/goals/${id}`, { method: 'DELETE' });
     expect((await del()).status).toBe(204);
     expect((await del()).status).toBe(404);
   });
 
   const createGoal = (name: string) =>
-    app.request('/v1/goals', {
+    req('/v1/goals', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ name, targetMinor: '500000' }),
@@ -118,7 +119,6 @@ describe.skipIf(!url)('POST /v1/goals/:id/contributions contra Postgres', () => 
     const res = await createGoal('  Viaje  ');
     expect(res.status).toBe(201);
     const goal = (await res.json()) as { id: string; name: string; targetMinor: string };
-    goalIds.push(goal.id);
     expect(goal).toMatchObject({ name: 'Viaje', targetMinor: '500000' });
   });
 

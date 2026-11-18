@@ -1,5 +1,7 @@
-import { ScrollView } from 'react-native';
+import { Link } from 'expo-router';
+import { Pressable, ScrollView } from 'react-native';
 import { Screen } from '@/components/ui/screen';
+import { Text } from '@/components/ui/text';
 import { BudgetsSummary } from '@/features/budgets/components/budgets-summary';
 import { InvestmentsSummary } from '@/features/investments/components/investment-totals';
 import { MonthSummary } from '@/features/transactions/components/month-summary';
@@ -15,6 +17,14 @@ export default function DashboardScreen() {
         <MonthlyChart />
         <BudgetsSummary />
         <InvestmentsSummary />
+        <Link href="/backup" asChild>
+          <Pressable
+            className="min-h-[44px] items-center justify-center"
+            accessibilityRole="button"
+          >
+            <Text className="text-[15px] text-accent">Copia de seguridad</Text>
+          </Pressable>
+        </Link>
       </ScrollView>
     </Screen>
   );

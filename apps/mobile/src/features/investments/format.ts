@@ -20,6 +20,9 @@ export const PERIOD_CHANGE_LABELS: Record<InvestmentPeriod, string> = {
   year: 'Último año',
 };
 
+/** "11,5 %" desde centésimas de %. */
+export const formatRate = (bps: number) => `${(bps / 100).toLocaleString('es-CO')} %`;
+
 /** "+$ 120.000 (+8,5 %)": ganancia en pesos y en % sobre `base`; sin % si la base es 0. */
 export function formatChange(gain: bigint, base: bigint) {
   const sign = gain > 0n ? '+' : gain < 0n ? '−' : '';

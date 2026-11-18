@@ -1,6 +1,6 @@
 # 3. API propia con Hono, PostgreSQL y Drizzle
 
-- Estado: aceptada
+- Estado: reemplazada por [ADR-0008](0008-datos-en-el-celular.md)
 - Fecha: 2026-11-11
 
 ## Contexto

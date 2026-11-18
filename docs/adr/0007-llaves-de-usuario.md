@@ -1,6 +1,6 @@
 # 7. Llaves foráneas de `user_id` a `users`
 
-- Estado: aceptada
+- Estado: reemplazada por [ADR-0008](0008-datos-en-el-celular.md)
 - Fecha: 2026-11-17
 - Completa: [ADR-0006](0006-autenticacion-better-auth.md)
 

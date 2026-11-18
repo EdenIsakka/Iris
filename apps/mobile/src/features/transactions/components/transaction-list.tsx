@@ -97,7 +97,7 @@ function TransactionRow({ item, category, first, last }: RowProps) {
         </View>
         <Text className={`text-[17px] font-medium ${income ? 'text-positive' : ''}`}>
           {income ? '+' : '−'}
-          {formatMoney(item.amountMinor)}
+          {formatMoney(item.amountMinor, item.currency)}
         </Text>
       </Pressable>
     </Link>

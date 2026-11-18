@@ -59,6 +59,7 @@ export function TransactionForm({ onSaved, transaction, footer }: Props) {
   if (!wallets.data?.length) return <Text className="p-4">Primero necesitas una billetera.</Text>;
 
   const selectedWallet = walletId ?? wallets.data[0]?.id ?? '';
+  const currency = wallets.data.find((w) => w.id === selectedWallet)?.currency ?? 'COP';
   const kindCategories = (categories.data ?? []).filter((c) => c.kind === kind);
 
   function submit() {
@@ -112,7 +113,13 @@ export function TransactionForm({ onSaved, transaction, footer }: Props) {
         onChange={chooseKind}
       />
 
-      <AmountInput label="Monto (COP)" value={amount} onChangeValue={setAmount} autoFocus />
+      <AmountInput
+        label={`Monto (${currency})`}
+        value={amount}
+        onChangeValue={setAmount}
+        currency={currency}
+        autoFocus
+      />
 
       <FieldLabel>Fecha</FieldLabel>
       <View className="flex-row flex-wrap gap-2">

@@ -4,7 +4,23 @@ Gestor de finanzas personales pensado para el celular: registra ingresos y gasto
 
 Todo se guarda en tu celular: no hay servidor ni cuenta que crear.
 
-> APK: _pendiente_
+**[Descargar la APK para Android](https://github.com/EdenIsakka/finanzas-app/releases/latest)** (en _Assets_ del último release; solo Android).
+
+## Capturas
+
+<p>
+  <img src="docs/screenshots/resumen.jpeg" alt="Resumen con billeteras en COP y USD" width="200">
+  <img src="docs/screenshots/resumen-grafica.jpeg" alt="Gráfica de 6 meses y topes del mes" width="200">
+  <img src="docs/screenshots/movimientos.jpeg" alt="Lista de movimientos" width="200">
+  <img src="docs/screenshots/nuevo-gasto.jpeg" alt="Formulario de nuevo gasto" width="200">
+</p>
+
+<p>
+  <img src="docs/screenshots/nuevo-ingreso.jpeg" alt="Formulario de nuevo ingreso" width="200">
+  <img src="docs/screenshots/metas.jpeg" alt="Metas de ahorro" width="200">
+  <img src="docs/screenshots/inversiones.jpeg" alt="Inversiones con totales" width="200">
+  <img src="docs/screenshots/nueva-inversion.jpeg" alt="Nueva inversión con precio automático" width="200">
+</p>
 
 ## Stack
 

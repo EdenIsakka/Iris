@@ -25,7 +25,7 @@ export type Backup = {
   tables: Record<string, Row[]>;
 };
 
-const NOT_A_BACKUP = 'Este archivo no es una copia de Finanzas, o está dañado.';
+const NOT_A_BACKUP = 'Este archivo no es una copia de Iris, o está dañado.';
 
 export function backupService(db: Db) {
   const columnsOf = (table: string) =>

@@ -32,7 +32,7 @@ export function BackupPanel() {
       const folder = await Directory.pickDirectoryAsync().catch(() => null);
       if (!folder) return null;
       const date = new Date().toISOString().slice(0, 10);
-      const file = folder.createFile(`finanzas-${date}.json`, 'application/json');
+      const file = folder.createFile(`iris-${date}.json`, 'application/json');
       await file.write(JSON.stringify(backup.exportData()));
       return file.name;
     },
@@ -46,7 +46,7 @@ export function BackupPanel() {
       try {
         data = JSON.parse(await picked.result.text());
       } catch {
-        throw new Error('Este archivo no es una copia de Finanzas, o está dañado.');
+        throw new Error('Este archivo no es una copia de Iris, o está dañado.');
       }
       const rows = backup.importData(data);
       await queryClient.invalidateQueries();

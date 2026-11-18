@@ -1,7 +1,8 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Tabs } from 'expo-router';
-import type { ComponentProps } from 'react';
+import { router, Tabs } from 'expo-router';
+import { type ComponentProps, useEffect } from 'react';
 import type { ColorValue } from 'react-native';
+import { isFirstLaunch } from '@/lib/price-key';
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
 
@@ -18,6 +19,11 @@ const icon =
   );
 
 export default function TabsLayout() {
+  // La primera vez explica qué cuenta crear para los precios automáticos.
+  useEffect(() => {
+    isFirstLaunch().then((first) => first && router.push('/price-key'));
+  }, []);
+
   return (
     <Tabs screenOptions={{ headerShown: false }}>
       <Tabs.Screen name="index" options={{ title: 'Resumen', tabBarIcon: icon('pie-chart') }} />

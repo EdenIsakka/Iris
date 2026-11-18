@@ -20,6 +20,10 @@ export const PERIOD_CHANGE_LABELS: Record<InvestmentPeriod, string> = {
   year: 'Último año',
 };
 
+/** "0,0015" desde cienmillonésimas de unidad. */
+export const formatQuantity = (e8: bigint) =>
+  (Number(e8) / 1e8).toLocaleString('es-CO', { maximumFractionDigits: 8 });
+
 /** "11,5 %" desde centésimas de %. */
 export const formatRate = (bps: number) => `${(bps / 100).toLocaleString('es-CO')} %`;
 

@@ -1,6 +1,7 @@
 export { type Db, drizzleConfig } from './db';
 export { migrate } from './migrations';
 export * from './schema';
+export { type Backup, backupService } from './services/backup';
 export { budgetsService } from './services/budgets';
 export { categoriesService } from './services/categories';
 export { goalsService } from './services/goals';

@@ -21,5 +21,4 @@ Gestor de finanzas personales mobile-first. Los datos viven en el celular, sin s
 
 ## Pendiente
 
-- Exportar e importar una copia de los datos (si se pierde el celular, se pierden).
 - Tocar una barra de la gráfica mensual para ver los montos exactos.

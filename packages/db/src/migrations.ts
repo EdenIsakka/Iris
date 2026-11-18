@@ -92,6 +92,9 @@ const MIGRATIONS: string[][] = [
   ],
 ];
 
+/** Versión de la base; va en las copias para no importar una de una app más nueva. */
+export const SCHEMA_VERSION = MIGRATIONS.length;
+
 const DEFAULT_CATEGORIES = {
   expense: [
     'Mercado',

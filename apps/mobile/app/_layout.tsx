@@ -36,6 +36,7 @@ export default function RootLayout() {
             <Stack.Screen name="investments/[id]/index" options={modal('Inversión')} />
             <Stack.Screen name="investments/[id]/edit" options={modal('Editar inversión')} />
             <Stack.Screen name="price-key" options={modal('Precios automáticos')} />
+            <Stack.Screen name="backup" options={modal('Copia de seguridad')} />
           </Stack>
         </QueryClientProvider>
       </ThemeProvider>

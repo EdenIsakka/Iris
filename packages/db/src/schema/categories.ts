@@ -7,6 +7,5 @@ export const categories = pgTable('categories', {
   userId: ownerId(),
   name: text().notNull(),
   kind: transactionKind().notNull(),
-  icon: text(),
   ...timestamps,
 });

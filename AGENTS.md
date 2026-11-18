@@ -22,4 +22,5 @@ Gestor de finanzas personales mobile-first. Monorepo pnpm + Turborepo.
 
 ## Pendiente
 
-- NativeWind en la app (Victory Native ya está, fijo en 42.x: ver `renovate.json`).
+- Borrar la cuenta desde la app (la base ya borra en cascada: ver `docs/adr/0007`).
+- Tocar una barra de la gráfica mensual para ver los montos exactos.

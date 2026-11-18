@@ -2,7 +2,7 @@ import { date, pgEnum, pgTable, text, uuid } from 'drizzle-orm/pg-core';
 import { currency, id, money, timestamps } from './_shared';
 import { ownerId } from './auth';
 
-export const goalStatus = pgEnum('goal_status', ['active', 'completed', 'archived']);
+export const goalStatus = pgEnum('goal_status', ['active', 'completed']);
 
 export const goals = pgTable('goals', {
   id: id(),

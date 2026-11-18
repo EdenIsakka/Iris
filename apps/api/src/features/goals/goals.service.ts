@@ -47,7 +47,7 @@ export function goalsService(db: Db) {
           name: input.name,
           targetMinor: target,
           deadline: input.deadline ?? null,
-          status: sql`case when ${goals.status} = 'archived' then ${goals.status} when ${target} <= ${saved} then 'completed'::goal_status else 'active'::goal_status end`,
+          status: sql`case when ${target} <= ${saved} then 'completed'::goal_status else 'active'::goal_status end`,
         })
         .where(and(eq(goals.id, id), eq(goals.userId, userId)))
         .returning();

@@ -85,6 +85,11 @@ const MIGRATIONS: string[][] = [
   ],
   [`create table trm (date text primary key not null, rate_minor ${money})`],
   ['alter table investments add column rate_bps integer'],
+  [
+    'alter table investments add column symbol text',
+    'alter table investment_contributions add column quantity_e8 integer',
+    'alter table investment_valuations add column auto integer not null default 0',
+  ],
 ];
 
 const DEFAULT_CATEGORIES = {

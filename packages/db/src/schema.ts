@@ -1,4 +1,4 @@
-import { CURRENCIES } from '@finanzas/shared';
+import { CURRENCIES, PRICE_SYMBOLS } from '@finanzas/shared';
 import { sql } from 'drizzle-orm';
 import { customType, index, integer, sqliteTable, text, unique } from 'drizzle-orm/sqlite-core';
 
@@ -102,6 +102,8 @@ export const investments = sqliteTable('investments', {
   currency: currency(),
   /** Tasa efectiva anual en centésimas de % (CDT, cajita de Nu); null si el valor se registra a mano. */
   rateBps: integer(),
+  /** Con precio automático (BTC, VOO…): el valor es unidades × precio. */
+  symbol: text({ enum: PRICE_SYMBOLS }),
   createdAt: createdAt(),
 });
 
@@ -121,6 +123,8 @@ export const investmentContributions = sqliteTable(
     id: id(),
     investmentId: investmentId(),
     amountMinor: money().notNull(),
+    /** Unidades compradas en cienmillonésimas (como satoshis); solo con precio automático. */
+    quantityE8: money('quantity_e8'),
     occurredAt: occurredAt(),
   },
   (t) => [index('investment_contributions_idx').on(t.investmentId, t.occurredAt)],
@@ -133,6 +137,8 @@ export const investmentValuations = sqliteTable(
     id: id(),
     investmentId: investmentId(),
     valueMinor: money().notNull(),
+    /** Calculado con el precio del día; se reemplaza en cada actualización del mismo día. */
+    auto: integer({ mode: 'boolean' }).notNull().default(false),
     occurredAt: occurredAt(),
   },
   (t) => [index('investment_valuations_idx').on(t.investmentId, t.occurredAt)],

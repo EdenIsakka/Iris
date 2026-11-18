@@ -1,4 +1,4 @@
-import { formatMoney, type InvestmentPeriod } from '@finanzas/shared';
+import { formatMoney, type InvestmentPeriod, PRICED, quantity } from '@finanzas/shared';
 import { Link } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
@@ -7,8 +7,15 @@ import { Card } from '@/components/ui/card';
 import { Button, Form, FormError } from '@/components/ui/form';
 import { Text } from '@/components/ui/text';
 import { formatDate } from '@/lib/format-date';
-import { useContributeInvestment, useInvestments, useValuations, useValueInvestment } from '../api';
-import { changeClass, formatChange, formatRate, KIND_LABELS } from '../format';
+import {
+  useContributeInvestment,
+  useInvestments,
+  usePriceKey,
+  useValuations,
+  useValueInvestment,
+} from '../api';
+import { changeClass, formatChange, formatQuantity, formatRate, KIND_LABELS } from '../format';
+import { QuantityInput } from './investment-form';
 import { StatsBlock } from './investment-totals';
 import { PeriodChips } from './period-chips';
 
@@ -19,6 +26,7 @@ export function InvestmentDetail({ id, initialPeriod = 'month' }: Props) {
   const { data, isLoading, error } = useInvestments(period);
   const setValue = useValueInvestment(id);
   const contribute = useContributeInvestment(id);
+  const priceKey = usePriceKey();
 
   if (isLoading) return <Text className="p-4 text-secondary">Cargando…</Text>;
   if (error) return <Text className="p-4">{error.message}</Text>;
@@ -32,8 +40,22 @@ export function InvestmentDetail({ id, initialPeriod = 'month' }: Props) {
         <Text className="text-[15px] text-secondary">
           {KIND_LABELS[investment.kind]}
           {investment.rateBps ? ` · ${formatRate(investment.rateBps)} EA, crece solo cada día` : ''}
+          {investment.symbol ? ` · ${formatQuantity(investment.quantityE8)} unidades` : ''}
         </Text>
       </View>
+
+      {investment.symbol &&
+      PRICED[investment.symbol].kind === 'fund' &&
+      priceKey.isSuccess &&
+      !priceKey.data ? (
+        <Link href="/price-key" asChild>
+          <Pressable className="min-h-[44px] justify-center px-1" accessibilityRole="button">
+            <Text className="text-[15px] text-accent">
+              Para que el precio se actualice solo, agrega tu llave de Twelve Data
+            </Text>
+          </Pressable>
+        </Link>
+      ) : null}
 
       <PeriodChips value={period} onChange={setPeriod} />
       <View className="mt-2">
@@ -42,8 +64,24 @@ export function InvestmentDetail({ id, initialPeriod = 'month' }: Props) {
         </Card>
       </View>
 
-      <AmountForm label="¿Cuánto vale hoy? (COP)" button="Actualizar valor" mutation={setValue} />
-      <AmountForm label="¿Cuánto más metiste? (COP)" button="Aportar" mutation={contribute} />
+      {/* Con precio automático el valor de hoy sale del precio. */}
+      {investment.symbol ? null : (
+        <AmountForm
+          label="¿Cuánto vale hoy? (COP)"
+          button="Actualizar valor"
+          mutation={setValue}
+          submit={(amount, _, onSuccess) => setValue.mutate(amount, { onSuccess })}
+        />
+      )}
+      <AmountForm
+        label={investment.symbol ? '¿Cuánto pagaste? (COP)' : '¿Cuánto más metiste? (COP)'}
+        button="Aportar"
+        mutation={contribute}
+        withQuantity={Boolean(investment.symbol)}
+        submit={(amount, units, onSuccess) =>
+          contribute.mutate({ amountMinor: amount, quantity: units || undefined }, { onSuccess })
+        }
+      />
 
       <View className="mt-6">
         <Card title="Evolución">
@@ -94,30 +132,37 @@ function History({ id, period }: { id: string; period: InvestmentPeriod }) {
   );
 }
 
-type AmountMutation = {
-  mutate: (amount: string, options: { onSuccess: () => void }) => void;
-  isPending: boolean;
-  error: Error | null;
-};
-
 function AmountForm({
   label,
   button,
   mutation,
+  withQuantity = false,
+  submit,
 }: {
   label: string;
   button: string;
-  mutation: AmountMutation;
+  mutation: { isPending: boolean; error: Error | null };
+  /** Con precio automático también pide las unidades compradas. */
+  withQuantity?: boolean;
+  submit: (amount: string, units: string, onSuccess: () => void) => void;
 }) {
   const [amount, setAmount] = useState('');
+  const [units, setUnits] = useState('');
+  const ready = Boolean(amount) && (!withQuantity || quantity.safeParse(units).success);
   return (
     <View className="mt-4 gap-2">
       <AmountInput label={label} value={amount} onChangeValue={setAmount} />
+      {withQuantity ? <QuantityInput value={units} onChange={setUnits} /> : null}
       <FormError message={mutation.error?.message} />
       <Button
         label={mutation.isPending ? 'Guardando…' : button}
-        onPress={() => mutation.mutate(amount, { onSuccess: () => setAmount('') })}
-        disabled={!amount || mutation.isPending}
+        onPress={() =>
+          submit(amount, units, () => {
+            setAmount('');
+            setUnits('');
+          })
+        }
+        disabled={!ready || mutation.isPending}
       />
     </View>
   );

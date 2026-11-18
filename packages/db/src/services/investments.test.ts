@@ -36,7 +36,7 @@ describe('investmentsService', () => {
     expect(service.list('month').items[0]).toMatchObject({ rateBps: 900, valueMinor: grown });
     expect(service.history(id, 'week')?.at(-1)?.valueMinor).toBe(grown);
 
-    service.contribute(id, '100000');
+    service.contribute(id, { amountMinor: '100000' });
     expect(service.list('month').items[0]?.valueMinor).toBe(grown + 100_000n);
   });
 
@@ -44,7 +44,7 @@ describe('investmentsService', () => {
     const service = investmentsService(testDb());
     const { id } = service.create({ name: 'CDT', kind: 'cdt', amountMinor: '1000' });
     expect(service.value(id, '1100')).toBe(true);
-    expect(service.contribute(id, '500')).toBe(true);
+    expect(service.contribute(id, { amountMinor: '500' })).toBe(true);
     expect(service.list('month').totals).toMatchObject({
       investedMinor: 1500n,
       valueMinor: 1600n,

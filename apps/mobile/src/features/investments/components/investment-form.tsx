@@ -2,6 +2,9 @@ import {
   createInvestmentSchema,
   type InvestmentKind,
   investmentKind,
+  PRICE_SYMBOLS,
+  PRICED,
+  type PriceSymbol,
   updateInvestmentSchema,
 } from '@finanzas/shared';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -46,14 +49,28 @@ export function InvestmentForm({ onSaved, investment, footer }: Props) {
   const [rate, setRate] = useState(
     investment?.rateBps ? String(investment.rateBps / 100).replace('.', ',') : '',
   );
+  const [symbol, setSymbol] = useState<PriceSymbol | null>(null);
+  const [quantity, setQuantity] = useState('');
   const [amount, setAmount] = useState('');
   const [currentValue, setCurrentValue] = useState('');
   const [startedAt, setStartedAt] = useState(() => new Date());
   const [pickingDate, setPickingDate] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Con precio automático el valor sale del precio: no lleva tasa ni valor de hoy.
+  const priced = Boolean(symbol ?? investment?.symbol);
+  const showRate = RATED_KINDS.includes(kind) && !priced;
+
+  function choosePriced(s: PriceSymbol | null) {
+    setSymbol(s);
+    if (s) {
+      setName(PRICED[s].name);
+      setKind(PRICED[s].kind);
+    }
+  }
+
   function submit() {
-    const rateBps = RATED_KINDS.includes(kind) ? parseRate(rate) : null;
+    const rateBps = showRate ? parseRate(rate) : null;
     if (Number.isNaN(rateBps) || rateBps === 0) {
       return setError('Escribe la tasa como 11,5 (de 0,01 a 100).');
     }
@@ -68,12 +85,20 @@ export function InvestmentForm({ onSaved, investment, footer }: Props) {
       kind,
       amountMinor: amount,
       startedAt: isToday(startedAt) ? undefined : isoDate(startedAt),
-      currentValueMinor: currentValue || undefined,
+      currentValueMinor: (!symbol && currentValue) || undefined,
       rateBps,
+      symbol,
+      quantity: symbol ? quantity : undefined,
     });
     if (!parsed.success) {
       const field = parsed.error.issues[0]?.path[0];
-      setError(field === 'name' ? 'Escribe un nombre.' : 'Escribe cuánto invertiste.');
+      setError(
+        field === 'name'
+          ? 'Escribe un nombre.'
+          : field === 'quantity'
+            ? 'Escribe cuántas unidades compraste, ej. 0,0015.'
+            : 'Escribe cuánto invertiste.',
+      );
       return;
     }
     setError(null);
@@ -82,6 +107,27 @@ export function InvestmentForm({ onSaved, investment, footer }: Props) {
 
   return (
     <Form>
+      {investment ? null : (
+        <>
+          <FieldLabel>¿Precio automático?</FieldLabel>
+          <View className="flex-row flex-wrap gap-2">
+            <Chip
+              label="No, lo registro yo"
+              selected={!symbol}
+              onPress={() => choosePriced(null)}
+            />
+            {PRICE_SYMBOLS.map((s) => (
+              <Chip
+                key={s}
+                label={PRICED[s].name}
+                selected={s === symbol}
+                onPress={() => choosePriced(s)}
+              />
+            ))}
+          </View>
+        </>
+      )}
+
       <FieldLabel nativeID="investment-name-label">Nombre</FieldLabel>
       <TextInput
         className={`${inputClassName} text-[17px]`}
@@ -93,14 +139,23 @@ export function InvestmentForm({ onSaved, investment, footer }: Props) {
         autoFocus={!investment}
       />
 
-      <FieldLabel>Tipo</FieldLabel>
-      <View className="flex-row flex-wrap gap-2">
-        {investmentKind.options.map((k) => (
-          <Chip key={k} label={KIND_LABELS[k]} selected={k === kind} onPress={() => setKind(k)} />
-        ))}
-      </View>
+      {symbol ? null : (
+        <>
+          <FieldLabel>Tipo</FieldLabel>
+          <View className="flex-row flex-wrap gap-2">
+            {investmentKind.options.map((k) => (
+              <Chip
+                key={k}
+                label={KIND_LABELS[k]}
+                selected={k === kind}
+                onPress={() => setKind(k)}
+              />
+            ))}
+          </View>
+        </>
+      )}
 
-      {RATED_KINDS.includes(kind) ? (
+      {showRate ? (
         <>
           <FieldLabel nativeID="investment-rate-label">Tasa efectiva anual % (opcional)</FieldLabel>
           <TextInput
@@ -122,6 +177,7 @@ export function InvestmentForm({ onSaved, investment, footer }: Props) {
       {investment ? null : (
         <>
           <AmountInput label="¿Cuánto invertiste? (COP)" value={amount} onChangeValue={setAmount} />
+          {symbol ? <QuantityInput value={quantity} onChange={setQuantity} /> : null}
 
           <FieldLabel>¿Desde cuándo?</FieldLabel>
           <View className="flex-row flex-wrap gap-2">
@@ -148,7 +204,7 @@ export function InvestmentForm({ onSaved, investment, footer }: Props) {
             />
           ) : null}
 
-          {isToday(startedAt) ? null : (
+          {symbol || isToday(startedAt) ? null : (
             <AmountInput
               label="¿Cuánto vale hoy? (opcional)"
               value={currentValue}
@@ -166,5 +222,32 @@ export function InvestmentForm({ onSaved, investment, footer }: Props) {
       />
       {footer}
     </Form>
+  );
+}
+
+/** Unidades compradas, con hasta 8 decimales (Bitcoin se compra en pedacitos). */
+export function QuantityInput({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  return (
+    <>
+      <FieldLabel nativeID="investment-quantity-label">¿Cuántas unidades compraste?</FieldLabel>
+      <TextInput
+        className={`${inputClassName} text-[17px]`}
+        value={value}
+        onChangeText={onChange}
+        placeholder="Ej. 0,0015"
+        keyboardType="decimal-pad"
+        maxLength={18}
+        accessibilityLabelledBy="investment-quantity-label"
+      />
+      <Text className="text-[13px] text-secondary">
+        Está en el comprobante de compra. El valor se actualiza solo con el precio del día.
+      </Text>
+    </>
   );
 }

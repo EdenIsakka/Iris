@@ -6,6 +6,7 @@ export { categoriesService } from './services/categories';
 export { goalsService } from './services/goals';
 export type { InvestmentStats } from './services/investment-stats';
 export { investmentsService } from './services/investments';
+export { pricesService } from './services/prices';
 export { type TransactionsPage, transactionsService } from './services/transactions';
 export { trmService } from './services/trm';
 export { walletsService } from './services/wallets';

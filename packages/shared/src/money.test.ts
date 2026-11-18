@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { copToUsd, formatMoney, usdToCop } from './money';
+import { toQuantityE8 } from './schemas/investment';
 
 describe('formatMoney', () => {
   it('formatea pesos colombianos sin decimales', () => {
@@ -24,5 +25,13 @@ describe('conversión con la TRM', () => {
   it('pasa pesos a centavos de dólar', () => {
     expect(copToUsd(4123n, trm)).toBe(100n);
     expect(copToUsd(-41235n, trm)).toBe(-1000n);
+  });
+});
+
+describe('toQuantityE8', () => {
+  it('lee unidades con coma o punto sin perder decimales', () => {
+    expect(toQuantityE8('0,0015')).toBe(150_000n);
+    expect(toQuantityE8('3')).toBe(300_000_000n);
+    expect(toQuantityE8('1.12345678')).toBe(112_345_678n);
   });
 });

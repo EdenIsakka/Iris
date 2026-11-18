@@ -1,8 +1,11 @@
 import {
   amountMinor,
+  type ContributeToInvestmentInput,
   type CreateInvestmentInput,
+  contributeToInvestmentSchema,
   createInvestmentSchema,
   type InvestmentPeriod,
+  toQuantityE8,
   type UpdateInvestmentInput,
   updateInvestmentSchema,
 } from '@finanzas/shared';
@@ -29,7 +32,7 @@ export function investmentsService(db: Db) {
   /** La inversión con su tasa; undefined si no existe. */
   const find = (id: string) =>
     db
-      .select({ id: investments.id, rateBps: investments.rateBps })
+      .select({ id: investments.id, rateBps: investments.rateBps, symbol: investments.symbol })
       .from(investments)
       .where(eq(investments.id, id))
       .get();
@@ -55,8 +58,8 @@ export function investmentsService(db: Db) {
       const rows = db.select().from(investments).orderBy(asc(investments.createdAt)).all();
       if (!rows.length) return { items: [], totals: zero };
       const ids = rows.map((r) => r.id);
-      // shortcut: trae todo el historial y calcula en memoria; sirve con registros a mano,
-      // pasar a SQL si algún día se cargan precios automáticos cada hora.
+      // shortcut: trae todo el historial y calcula en memoria; sirve porque los precios
+      // automáticos dejan un solo valor por día. Pasar a SQL si se vuelve lento.
       const contributions = db
         .select()
         .from(investmentContributions)
@@ -71,6 +74,10 @@ export function investmentsService(db: Db) {
       const since = periodStart(period);
       const items = rows.map((r) => ({
         id: r.id,
+        symbol: r.symbol,
+        quantityE8: contributions
+          .filter((c) => c.investmentId === r.id)
+          .reduce((acc, c) => acc + (c.quantityE8 ?? 0n), 0n),
         name: r.name,
         kind: r.kind,
         currency: r.currency,
@@ -131,12 +138,22 @@ export function investmentsService(db: Db) {
       return db.transaction((tx) => {
         const row = tx
           .insert(investments)
-          .values({ name: input.name, kind: input.kind, rateBps: input.rateBps ?? null })
+          .values({
+            name: input.name,
+            kind: input.kind,
+            rateBps: input.rateBps ?? null,
+            symbol: input.symbol ?? null,
+          })
           .returning()
           .get();
         const investmentId = row.id;
         tx.insert(investmentContributions)
-          .values({ investmentId, amountMinor: amount, occurredAt })
+          .values({
+            investmentId,
+            amountMinor: amount,
+            quantityE8: input.symbol && input.quantity ? toQuantityE8(input.quantity) : null,
+            occurredAt,
+          })
           .run();
         tx.insert(investmentValuations)
           .values({ investmentId, valueMinor: amount, occurredAt })
@@ -181,14 +198,23 @@ export function investmentsService(db: Db) {
       return db.delete(investments).where(eq(investments.id, id)).returning().all().length > 0;
     },
 
-    /** Mete más plata: el valor actual sube en lo mismo. false si no existe. */
-    contribute(id: string, raw: string) {
-      const amount = BigInt(amountMinor.parse(raw));
+    /**
+     * Mete más plata: el valor actual sube en lo mismo (con precio automático, el próximo
+     * precio lo corrige). Con precio automático pide las unidades compradas. false si no existe.
+     */
+    contribute(id: string, raw: ContributeToInvestmentInput) {
+      const input = contributeToInvestmentSchema.parse(raw);
+      const amount = BigInt(input.amountMinor);
       const investment = find(id);
       if (!investment) return false;
+      if (investment.symbol && !input.quantity)
+        throw new Error('Escribe cuántas unidades compraste');
+      const quantityE8 = investment.symbol && input.quantity ? toQuantityE8(input.quantity) : null;
       db.transaction((tx) => {
         const valueMinor = currentValue(id, investment.rateBps) + amount;
-        tx.insert(investmentContributions).values({ investmentId: id, amountMinor: amount }).run();
+        tx.insert(investmentContributions)
+          .values({ investmentId: id, amountMinor: amount, quantityE8 })
+          .run();
         tx.insert(investmentValuations).values({ investmentId: id, valueMinor }).run();
       });
       return true;

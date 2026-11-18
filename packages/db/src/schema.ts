@@ -100,6 +100,8 @@ export const investments = sqliteTable('investments', {
   name: text().notNull(),
   kind: text({ enum: ['crypto', 'stocks', 'fund', 'cdt', 'other'] }).notNull(),
   currency: currency(),
+  /** Tasa efectiva anual en centésimas de % (CDT, cajita de Nu); null si el valor se registra a mano. */
+  rateBps: integer(),
   createdAt: createdAt(),
 });
 

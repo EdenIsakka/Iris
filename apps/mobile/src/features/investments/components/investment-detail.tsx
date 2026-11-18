@@ -8,7 +8,7 @@ import { Button, Form, FormError } from '@/components/ui/form';
 import { Text } from '@/components/ui/text';
 import { formatDate } from '@/lib/format-date';
 import { useContributeInvestment, useInvestments, useValuations, useValueInvestment } from '../api';
-import { changeClass, formatChange, KIND_LABELS } from '../format';
+import { changeClass, formatChange, formatRate, KIND_LABELS } from '../format';
 import { StatsBlock } from './investment-totals';
 import { PeriodChips } from './period-chips';
 
@@ -29,7 +29,10 @@ export function InvestmentDetail({ id, initialPeriod = 'month' }: Props) {
     <Form>
       <View className="px-1 pb-2">
         <Text className="text-[28px] font-bold tracking-tight">{investment.name}</Text>
-        <Text className="text-[15px] text-secondary">{KIND_LABELS[investment.kind]}</Text>
+        <Text className="text-[15px] text-secondary">
+          {KIND_LABELS[investment.kind]}
+          {investment.rateBps ? ` · ${formatRate(investment.rateBps)} EA, crece solo cada día` : ''}
+        </Text>
       </View>
 
       <PeriodChips value={period} onChange={setPeriod} />
@@ -82,6 +85,7 @@ function History({ id, period }: { id: string; period: InvestmentPeriod }) {
               className={`flex-1 text-right text-[13px] ${diff !== null ? changeClass(diff) : 'text-secondary'}`}
             >
               {diff !== null && prev ? formatChange(diff, prev.valueMinor) : 'Inicio'}
+              {v.id === 'today' ? ' · hoy' : ''}
             </Text>
           </View>
         );

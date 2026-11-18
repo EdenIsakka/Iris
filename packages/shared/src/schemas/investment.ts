@@ -13,9 +13,15 @@ export const createInvestmentSchema = z.object({
   startedAt: z.iso.date().optional(),
   /** Cuánto vale hoy, si ya cambió desde que empezó. */
   currentValueMinor: amountMinor.optional(),
+  /** Tasa efectiva anual en centésimas de % (11,5 % = 1150). Si viene, el valor crece solo cada día. */
+  rateBps: z.number().int().min(1).max(10_000).nullable().optional(),
 });
 
-export const updateInvestmentSchema = createInvestmentSchema.pick({ name: true, kind: true });
+export const updateInvestmentSchema = createInvestmentSchema.pick({
+  name: true,
+  kind: true,
+  rateBps: true,
+});
 export const contributeToInvestmentSchema = z.object({ amountMinor });
 export const valueInvestmentSchema = z.object({ valueMinor: amountMinor });
 export const investmentPeriodQuery = z.object({ period: investmentPeriod.default('month') });

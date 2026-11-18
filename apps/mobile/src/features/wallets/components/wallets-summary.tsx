@@ -11,7 +11,7 @@ export function WalletsSummary() {
   if (isLoading) return <Text className="text-secondary">Cargando…</Text>;
   if (error) return <Text>{error.message}</Text>;
   const wallets = data ?? [];
-  const total = wallets.reduce((acc, w) => acc + BigInt(w.balanceMinor), 0n);
+  const total = wallets.reduce((acc, w) => acc + w.balanceMinor, 0n);
 
   return (
     <Card title="Billeteras">
@@ -29,7 +29,7 @@ export function WalletsSummary() {
             <Text className="flex-1 text-[15px]" numberOfLines={1}>
               {w.name}
             </Text>
-            <Text className="text-[15px]">{formatMoney(BigInt(w.balanceMinor))}</Text>
+            <Text className="text-[15px]">{formatMoney(w.balanceMinor)}</Text>
           </Pressable>
         </Link>
       ))}

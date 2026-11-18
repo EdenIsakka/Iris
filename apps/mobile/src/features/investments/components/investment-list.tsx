@@ -71,7 +71,7 @@ function InvestmentRow({ item, period, first, last }: RowProps) {
           <Text className="text-[13px] text-secondary">{KIND_LABELS[item.kind]}</Text>
         </View>
         <View className="items-end">
-          <Text className="text-[17px] font-medium">{formatMoney(BigInt(item.valueMinor))}</Text>
+          <Text className="text-[17px] font-medium">{formatMoney(item.valueMinor)}</Text>
           <Text className={`text-[13px] ${changeClass(item.periodGainMinor)}`}>
             {formatChange(item.periodGainMinor, item.periodBaseMinor)}
           </Text>

@@ -17,7 +17,7 @@ export function GoalForm({ onSaved, goal, footer }: Props) {
   const update = useUpdateGoal(goal?.id ?? '');
   const save = goal ? update : create;
   const [name, setName] = useState(goal?.name ?? '');
-  const [target, setTarget] = useState(goal?.targetMinor ?? '');
+  const [target, setTarget] = useState(goal?.targetMinor.toString() ?? '');
   const [error, setError] = useState<string | null>(null);
 
   function submit() {

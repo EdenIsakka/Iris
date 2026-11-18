@@ -28,8 +28,8 @@ export function GoalList() {
 }
 
 function GoalRow({ item, first, last }: { item: Goal; first: boolean; last: boolean }) {
-  const saved = BigInt(item.savedMinor);
-  const target = BigInt(item.targetMinor);
+  const saved = item.savedMinor;
+  const target = item.targetMinor;
   const pct = target > 0n ? Number((saved * 100n) / target) : 0;
   const done = item.status === 'completed';
   return (

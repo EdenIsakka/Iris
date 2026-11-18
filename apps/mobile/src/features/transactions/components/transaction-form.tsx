@@ -42,15 +42,13 @@ export function TransactionForm({ onSaved, transaction, footer }: Props) {
   const createCategory = useCreateCategory();
 
   const [kind, setKind] = useState<Kind>(transaction?.kind ?? 'expense');
-  const [amount, setAmount] = useState(transaction?.amountMinor ?? '');
+  const [amount, setAmount] = useState(transaction?.amountMinor.toString() ?? '');
   const [walletId, setWalletId] = useState<string | null>(transaction?.walletId ?? null);
   const [categoryId, setCategoryId] = useState<string | null>(transaction?.categoryId ?? null);
   const [note, setNote] = useState(transaction?.note ?? '');
   const [error, setError] = useState<string | null>(null);
   const [newCategory, setNewCategory] = useState<string | null>(null);
-  const [date, setDate] = useState(() =>
-    transaction ? new Date(transaction.occurredAt) : new Date(),
-  );
+  const [date, setDate] = useState(() => transaction?.occurredAt ?? new Date());
   const [pickingDate, setPickingDate] = useState(false);
 
   if (wallets.isLoading || categories.isLoading) {

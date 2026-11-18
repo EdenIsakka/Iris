@@ -16,7 +16,7 @@ export function BudgetForm({ categoryId, onDone }: Props) {
   }
   const category = categories.data?.find((c) => c.id === categoryId);
   if (!category) return <Text className="p-4">No encontramos esta categoría.</Text>;
-  const current = budgets.data?.find((b) => b.categoryId === categoryId)?.limitMinor;
+  const current = budgets.data?.find((b) => b.categoryId === categoryId)?.limitMinor.toString();
 
   // key: el estado del monto arranca con el tope ya cargado.
   return (

@@ -20,8 +20,8 @@ export function ContributionForm({ goalId, onSaved }: Props) {
   const goal = goals.data?.find((g) => g.id === goalId);
   if (!goal) return <Text className="p-4">No encontramos esta meta.</Text>;
 
-  const saved = BigInt(goal.savedMinor);
-  const missing = BigInt(goal.targetMinor) - saved;
+  const saved = goal.savedMinor;
+  const missing = goal.targetMinor - saved;
 
   function submit() {
     if (!contributeToGoalSchema.safeParse({ amountMinor: amount }).success) {

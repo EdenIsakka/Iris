@@ -7,10 +7,24 @@
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "ios": { "bundleIdentifier": "com.julianisaza.finanzas" },
-    "android": { "package": "com.julianisaza.finanzas" },
-    "web": { "bundler": "metro", "output": "static" },
-    "plugins": ["expo-router", "@react-native-community/datetimepicker", "expo-secure-store"],
-    "experiments": { "typedRoutes": true }
+    "ios": {
+      "bundleIdentifier": "com.julianisaza.finanzas"
+    },
+    "android": {
+      "package": "com.julianisaza.finanzas"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static"
+    },
+    "plugins": [
+      "expo-router",
+      "@react-native-community/datetimepicker",
+      "expo-secure-store",
+      "expo-sqlite"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
   }
 }

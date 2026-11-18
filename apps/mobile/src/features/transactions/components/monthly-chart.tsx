@@ -35,7 +35,7 @@ export function MonthlyChart() {
   const summary = months
     .map(
       (m) =>
-        `${monthName(m.month)}: ingresos ${formatMoney(BigInt(m.incomeMinor))}, gastos ${formatMoney(BigInt(m.expenseMinor))}`,
+        `${monthName(m.month)}: ingresos ${formatMoney(m.incomeMinor)}, gastos ${formatMoney(m.expenseMinor)}`,
     )
     .join('. ');
 

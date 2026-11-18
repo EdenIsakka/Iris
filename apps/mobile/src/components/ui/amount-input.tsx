@@ -9,7 +9,7 @@ type Props = {
   autoFocus?: boolean;
 };
 
-/** Monto en pesos: solo dígitos, sin ceros iniciales y hasta 18 dígitos, como pide `amountMinor`. */
+/** Monto en pesos: solo dígitos, sin ceros iniciales y hasta 15 dígitos, como pide `amountMinor`. */
 export function AmountInput({ label, value, onChangeValue, autoFocus }: Props) {
   return (
     <>
@@ -19,7 +19,7 @@ export function AmountInput({ label, value, onChangeValue, autoFocus }: Props) {
         value={value}
         onChangeText={(t) => onChangeValue(t.replace(/\D/g, '').replace(/^0+/, ''))}
         keyboardType="number-pad"
-        maxLength={18}
+        maxLength={15}
         placeholder="0"
         accessibilityLabel={label}
         autoFocus={autoFocus}

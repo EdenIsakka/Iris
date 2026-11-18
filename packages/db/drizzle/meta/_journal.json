@@ -36,6 +36,13 @@
       "when": 1794951358253,
       "tag": "0004_user_fk",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1794971945341,
+      "tag": "0005_limpiar_pendientes",
+      "breakpoints": true
     }
   ]
 }

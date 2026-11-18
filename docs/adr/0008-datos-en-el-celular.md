@@ -26,7 +26,7 @@ La app la usan pocas personas, cada una con sus propias cuentas. Con un servidor
 
 ## Consecuencias
 
-- Si se pierde el celular o se borra la app, se pierden los datos. Falta exportar e importar una copia.
+- Si se pierde el celular o se borra la app, se pierden los datos. Para eso está la copia de seguridad (Resumen → Copia de seguridad): un JSON con todas las tablas que se puede abrir en otro celular.
 - No hay sincronización entre dispositivos.
 - Las consultas síncronas corren en el hilo de JS; con el volumen de una persona no se nota.
 - Una migración nueva se escribe a mano en SQL y debe coincidir con `schema.ts`; las pruebas de los servicios la ejercitan.

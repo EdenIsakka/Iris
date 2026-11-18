@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { investmentStats, periodStart } from './investment-stats';
+import { grow, investmentStats, periodStart } from './investment-stats';
 
 const day = (d: string) => new Date(`${d}T12:00:00Z`);
 
@@ -51,5 +51,32 @@ describe('periodStart', () => {
     expect(iso(periodStart('month', day('2026-05-31')))).toBe('2026-04-30');
     expect(iso(periodStart('year', day('2028-02-29')))).toBe('2027-02-28');
     expect(iso(periodStart('month', day('2026-01-15')))).toBe('2025-12-15');
+  });
+});
+
+describe('grow', () => {
+  const from = day('2026-01-01');
+
+  it('rinde la tasa efectiva anual por días completos', () => {
+    expect(grow(1_000_000n, 1000, from, day('2027-01-01'))).toBe(1_100_000n);
+    expect(grow(1_000_000n, 1000, from, day('2026-01-02'))).toBe(1_000_261n);
+    expect(grow(1_000_000n, 1000, from, new Date('2026-01-02T11:00:00Z'))).toBe(1_000_000n);
+  });
+
+  it('sin tasa no cambia', () => {
+    expect(grow(1_000_000n, null, from, day('2027-01-01'))).toBe(1_000_000n);
+  });
+
+  it('con tasa, el valor y la ganancia del periodo crecen solos', () => {
+    const s = investmentStats(
+      [{ amountMinor: 1_000_000n, occurredAt: from }],
+      [{ valueMinor: 1_000_000n, occurredAt: from }],
+      day('2026-07-02'),
+      1000,
+      day('2027-01-01'),
+    );
+    expect(s.valueMinor).toBe(1_100_000n);
+    expect(s.gainMinor).toBe(100_000n);
+    expect(s.periodGainMinor).toBe(1_100_000n - grow(1_000_000n, 1000, from, day('2026-07-02')));
   });
 });

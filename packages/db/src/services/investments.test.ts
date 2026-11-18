@@ -18,6 +18,28 @@ describe('investmentsService', () => {
     });
   });
 
+  it('con tasa crece solo; cambiar la tasa guarda lo que vale hoy', () => {
+    const service = investmentsService(testDb());
+    const twoYearsAgo = new Date(Date.now() - 730 * 86_400_000).toISOString().slice(0, 10);
+    const { id } = service.create({
+      name: 'Cajita Nu',
+      kind: 'other',
+      amountMinor: '1000000',
+      startedAt: twoYearsAgo,
+      rateBps: 1000,
+    });
+    const grown = service.list('month').items[0]?.valueMinor ?? 0n;
+    expect(grown).toBeGreaterThan(1_200_000n); // ~1,1² = 1,21
+    expect(grown).toBeLessThan(1_220_000n);
+
+    service.update(id, { name: 'Cajita Nu', kind: 'other', rateBps: 900 });
+    expect(service.list('month').items[0]).toMatchObject({ rateBps: 900, valueMinor: grown });
+    expect(service.history(id, 'week')?.at(-1)?.valueMinor).toBe(grown);
+
+    service.contribute(id, '100000');
+    expect(service.list('month').items[0]?.valueMinor).toBe(grown + 100_000n);
+  });
+
   it('aportar sube el valor en lo mismo y no cuenta como ganancia', () => {
     const service = investmentsService(testDb());
     const { id } = service.create({ name: 'CDT', kind: 'cdt', amountMinor: '1000' });

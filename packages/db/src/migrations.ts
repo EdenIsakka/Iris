@@ -84,6 +84,7 @@ const MIGRATIONS: string[][] = [
     'create index investment_valuations_idx on investment_valuations (investment_id, occurred_at)',
   ],
   [`create table trm (date text primary key not null, rate_minor ${money})`],
+  ['alter table investments add column rate_bps integer'],
 ];
 
 const DEFAULT_CATEGORIES = {

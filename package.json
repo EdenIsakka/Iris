@@ -7,15 +7,10 @@
   },
   "scripts": {
     "dev": "turbo run dev",
-    "build": "turbo run build",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
     "typecheck": "turbo run typecheck",
-    "test": "turbo run test",
-    "db:up": "docker compose up -d db",
-    "db:generate": "pnpm --filter @finanzas/db generate",
-    "db:migrate": "pnpm --filter @finanzas/db migrate",
-    "db:seed": "pnpm --filter @finanzas/db seed"
+    "test": "turbo run test"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.6.6",

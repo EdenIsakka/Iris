@@ -1,6 +1,5 @@
 import { ScrollView } from 'react-native';
 import { Screen } from '@/components/ui/screen';
-import { SignOutButton } from '@/features/auth/components/sign-out-button';
 import { BudgetsSummary } from '@/features/budgets/components/budgets-summary';
 import { InvestmentsSummary } from '@/features/investments/components/investment-totals';
 import { MonthSummary } from '@/features/transactions/components/month-summary';
@@ -16,7 +15,6 @@ export default function DashboardScreen() {
         <MonthlyChart />
         <BudgetsSummary />
         <InvestmentsSummary />
-        <SignOutButton />
       </ScrollView>
     </Screen>
   );

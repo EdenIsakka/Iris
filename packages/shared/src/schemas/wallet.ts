@@ -8,7 +8,7 @@ export const createWalletSchema = z.object({
   /** Lo que tenía antes de usar la app; puede ser 0. */
   openingBalanceMinor: z
     .string()
-    .regex(/^(0|[1-9]\d{0,17})$/, 'Debe ser un entero de 0 o más, de hasta 18 dígitos')
+    .regex(/^(0|[1-9]\d{0,14})$/, 'Debe ser un entero de 0 o más, de hasta 15 dígitos')
     .default('0'),
 });
 

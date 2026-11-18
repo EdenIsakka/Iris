@@ -70,20 +70,18 @@ function History({ id, period }: { id: string; period: InvestmentPeriod }) {
     <View>
       {data.map((v, i) => {
         const prev = data[i - 1];
-        const diff = prev ? (BigInt(v.valueMinor) - BigInt(prev.valueMinor)).toString() : null;
+        const diff = prev ? v.valueMinor - prev.valueMinor : null;
         return (
           <View
             key={v.id}
             className={`flex-row items-center gap-2 py-2 ${i > 0 ? 'border-t border-separator' : ''}`}
           >
-            <Text className="w-24 text-[15px] text-secondary">
-              {formatDate(new Date(v.occurredAt))}
-            </Text>
-            <Text className="text-[15px]">{formatMoney(BigInt(v.valueMinor))}</Text>
+            <Text className="w-24 text-[15px] text-secondary">{formatDate(v.occurredAt)}</Text>
+            <Text className="text-[15px]">{formatMoney(v.valueMinor)}</Text>
             <Text
-              className={`flex-1 text-right text-[13px] ${diff ? changeClass(diff) : 'text-secondary'}`}
+              className={`flex-1 text-right text-[13px] ${diff !== null ? changeClass(diff) : 'text-secondary'}`}
             >
-              {diff && prev ? formatChange(diff, prev.valueMinor) : 'Inicio'}
+              {diff !== null && prev ? formatChange(diff, prev.valueMinor) : 'Inicio'}
             </Text>
           </View>
         );

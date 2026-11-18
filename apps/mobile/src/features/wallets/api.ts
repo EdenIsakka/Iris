@@ -1,46 +1,42 @@
+import { walletsService } from '@finanzas/db';
 import type { CreateWalletInput } from '@finanzas/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { api } from '@/lib/api-client';
+import { db } from '@/lib/db';
+
+const wallets = walletsService(db);
 
 export const walletKeys = { all: ['wallets'] as const };
 
 export function useWallets() {
-  return useQuery({
-    queryKey: walletKeys.all,
-    queryFn: async () => {
-      const res = await api.v1.wallets.$get();
-      if (!res.ok) throw new Error('No se pudieron cargar las billeteras');
-      return res.json();
-    },
-  });
+  return useQuery({ queryKey: walletKeys.all, queryFn: () => wallets.list() });
 }
 
-export type Wallet = NonNullable<ReturnType<typeof useWallets>['data']>[number];
+export type Wallet = ReturnType<typeof wallets.list>[number];
 
 export function useSaveWallet(id?: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (json: CreateWalletInput) => {
-      const res = id
-        ? await api.v1.wallets[':id'].$put({ param: { id }, json })
-        : await api.v1.wallets.$post({ json });
-      if (!res.ok) throw new Error('No se pudo guardar la billetera');
+    mutationFn: async (input: CreateWalletInput) => {
+      if (!id) return void wallets.create(input);
+      if (!wallets.update(id, input)) throw new Error('No encontramos esta billetera');
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: walletKeys.all }),
   });
 }
 
+const REMOVE_ERRORS = {
+  'not-found': 'No encontramos esta billetera.',
+  last: 'Necesitas al menos una billetera.',
+  'has-transactions':
+    'Esta billetera tiene movimientos. Bórralos o pásalos a otra billetera primero.',
+};
+
 export function useDeleteWallet() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const res = await api.v1.wallets[':id'].$delete({ param: { id } });
-      // 409 trae la razón (tiene movimientos o es la única); el cliente tipado no la conoce.
-      if ((res.status as number) === 409) {
-        const body = (await res.json()) as unknown as { error: string };
-        throw new Error(`${body.error}.`);
-      }
-      if (!res.ok) throw new Error('No se pudo borrar la billetera');
+      const result = wallets.remove(id);
+      if (result !== 'deleted') throw new Error(REMOVE_ERRORS[result]);
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: walletKeys.all }),
   });

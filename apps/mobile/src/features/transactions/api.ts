@@ -1,14 +1,18 @@
+import { categoriesService, type TransactionsPage, transactionsService } from '@finanzas/db';
 import {
   type CreateCategoryInput,
   type CreateTransactionInput,
   TRANSACTIONS_PAGE_SIZE,
-  type TransactionsPageQuery,
 } from '@finanzas/shared';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { walletKeys } from '@/features/wallets/api';
-import { api } from '@/lib/api-client';
+import { db } from '@/lib/db';
+
+const transactions = transactionsService(db);
+const categories = categoriesService(db);
 
 export const transactionKeys = { all: ['transactions'] as const };
+const categoryKeys = { all: ['categories'] as const };
 
 /** Un movimiento cambia la lista, el resumen y el saldo de su billetera. */
 function refreshAfterTransaction(queryClient: ReturnType<typeof useQueryClient>) {
@@ -16,17 +20,15 @@ function refreshAfterTransaction(queryClient: ReturnType<typeof useQueryClient>)
   queryClient.invalidateQueries({ queryKey: walletKeys.all });
 }
 
+const INVALID = 'La billetera o la categoría ya no existen. Elige otra.';
+
 /** Movimientos de a páginas, del más nuevo al más viejo. */
 export function useTransactions() {
   return useInfiniteQuery({
     queryKey: [...transactionKeys.all, 'list'],
-    initialPageParam: {} as TransactionsPageQuery,
-    queryFn: async ({ pageParam }) => {
-      const res = await api.v1.transactions.$get({ query: pageParam });
-      if (!res.ok) throw new Error('No se pudieron cargar los movimientos');
-      return res.json();
-    },
-    getNextPageParam: (page): TransactionsPageQuery | undefined => {
+    initialPageParam: undefined as TransactionsPage | undefined,
+    queryFn: ({ pageParam }) => transactions.list(pageParam),
+    getNextPageParam: (page): TransactionsPage | undefined => {
       const last = page.at(-1);
       return page.length === TRANSACTIONS_PAGE_SIZE && last
         ? { before: last.occurredAt, beforeId: last.id }
@@ -36,26 +38,16 @@ export function useTransactions() {
 }
 
 export function useTransaction(id: string) {
-  return useQuery({
-    queryKey: [...transactionKeys.all, id],
-    queryFn: async () => {
-      const res = await api.v1.transactions[':id'].$get({ param: { id } });
-      if ((res.status as number) === 404) return null;
-      if (!res.ok) throw new Error('No se pudo cargar el movimiento');
-      return res.json();
-    },
-  });
+  return useQuery({ queryKey: [...transactionKeys.all, id], queryFn: () => transactions.get(id) });
 }
+
+export type Transaction = NonNullable<ReturnType<typeof transactions.get>>;
 
 // Cuelga de transactionKeys.all para que crear un movimiento también refresque el resumen.
 export function useMonthSummary() {
   return useQuery({
     queryKey: [...transactionKeys.all, 'summary'],
-    queryFn: async () => {
-      const res = await api.v1.transactions.summary.$get();
-      if (!res.ok) throw new Error('No se pudo cargar el resumen');
-      return res.json();
-    },
+    queryFn: () => transactions.monthSummary(),
   });
 }
 
@@ -63,35 +55,29 @@ export function useMonthSummary() {
 export function useMonthlyTotals() {
   return useQuery({
     queryKey: [...transactionKeys.all, 'monthly'],
-    queryFn: async () => {
-      const res = await api.v1.transactions.monthly.$get();
-      if (!res.ok) throw new Error('No se pudo cargar la gráfica');
-      return res.json();
-    },
+    queryFn: () => transactions.monthly(),
   });
 }
 
 export function useCreateTransaction() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (json: CreateTransactionInput) => {
-      const res = await api.v1.transactions.$post({ json });
-      if (!res.ok) throw new Error('No se pudo guardar el movimiento');
-      return res.json();
+    mutationFn: async (input: CreateTransactionInput) => {
+      const row = transactions.create(input);
+      if (!row) throw new Error(INVALID);
+      return row;
     },
     onSuccess: () => refreshAfterTransaction(queryClient),
   });
 }
 
-export type Transaction = NonNullable<ReturnType<typeof useTransaction>['data']>;
-
 export function useUpdateTransaction(id: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (json: CreateTransactionInput) => {
-      const res = await api.v1.transactions[':id'].$put({ param: { id }, json });
-      if (!res.ok) throw new Error('No se pudo guardar el movimiento');
-      return res.json();
+    mutationFn: async (input: CreateTransactionInput) => {
+      const row = transactions.update(id, input);
+      if (!row) throw new Error(INVALID);
+      return row;
     },
     onSuccess: () => refreshAfterTransaction(queryClient),
   });
@@ -101,37 +87,32 @@ export function useDeleteTransaction() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const res = await api.v1.transactions[':id'].$delete({ param: { id } });
-      if (!res.ok) throw new Error('No se pudo borrar el movimiento');
+      if (!transactions.remove(id)) throw new Error('Este movimiento ya no existe');
     },
     onSuccess: () => refreshAfterTransaction(queryClient),
   });
 }
 
+export function useCategories() {
+  return useQuery({ queryKey: categoryKeys.all, queryFn: () => categories.list() });
+}
+
 export function useCreateCategory() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (json: CreateCategoryInput) => {
-      const res = await api.v1.categories.$post({ json });
-      if (!res.ok) throw new Error('No se pudo crear la categoría');
-      return res.json();
-    },
+    mutationFn: async (input: CreateCategoryInput) => categories.create(input),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: categoryKeys.all }),
   });
 }
-
-const categoryKeys = { all: ['categories'] as const };
 
 export function useRenameCategory(id: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (name: string) => {
-      const res = await api.v1.categories[':id'].$put({ param: { id }, json: { name } });
-      // 409 lo lanza HTTPException, que el cliente tipado no conoce.
-      if ((res.status as number) === 409)
-        throw new Error('Ya tienes una categoría con ese nombre.');
-      if (!res.ok) throw new Error('No se pudo renombrar la categoría');
-      return res.json();
+      const result = categories.rename(id, name);
+      if (result === 'duplicate') throw new Error('Ya tienes una categoría con ese nombre.');
+      if (result === 'not-found') throw new Error('Esta categoría ya no existe.');
+      return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: categoryKeys.all });
@@ -145,23 +126,11 @@ export function useDeleteCategory() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const res = await api.v1.categories[':id'].$delete({ param: { id } });
-      if (!res.ok) throw new Error('No se pudo borrar la categoría');
+      if (!categories.remove(id)) throw new Error('Esta categoría ya no existe');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: categoryKeys.all });
       queryClient.invalidateQueries({ queryKey: transactionKeys.all });
-    },
-  });
-}
-
-export function useCategories() {
-  return useQuery({
-    queryKey: categoryKeys.all,
-    queryFn: async () => {
-      const res = await api.v1.categories.$get();
-      if (!res.ok) throw new Error('No se pudieron cargar las categorías');
-      return res.json();
     },
   });
 }

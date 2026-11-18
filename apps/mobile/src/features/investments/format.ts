@@ -21,9 +21,7 @@ export const PERIOD_CHANGE_LABELS: Record<InvestmentPeriod, string> = {
 };
 
 /** "+$ 120.000 (+8,5 %)": ganancia en pesos y en % sobre `base`; sin % si la base es 0. */
-export function formatChange(gainMinor: string, baseMinor: string) {
-  const gain = BigInt(gainMinor);
-  const base = BigInt(baseMinor);
+export function formatChange(gain: bigint, base: bigint) {
   const sign = gain > 0n ? '+' : gain < 0n ? '−' : '';
   const abs = gain < 0n ? -gain : gain;
   const pct =
@@ -32,7 +30,5 @@ export function formatChange(gainMinor: string, baseMinor: string) {
 }
 
 /** Clase de color del tema para una ganancia: verde, rojo o gris si es 0. */
-export const changeClass = (gainMinor: string) => {
-  const gain = BigInt(gainMinor);
-  return gain > 0n ? 'text-positive' : gain < 0n ? 'text-negative' : 'text-secondary';
-};
+export const changeClass = (gain: bigint) =>
+  gain > 0n ? 'text-positive' : gain < 0n ? 'text-negative' : 'text-secondary';

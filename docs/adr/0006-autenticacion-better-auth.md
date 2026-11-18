@@ -1,6 +1,6 @@
 # 6. Autenticación con Better Auth
 
-- Estado: aceptada
+- Estado: reemplazada por [ADR-0008](0008-datos-en-el-celular.md)
 - Fecha: 2026-11-13
 
 ## Contexto

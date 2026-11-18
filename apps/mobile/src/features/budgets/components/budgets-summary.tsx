@@ -39,8 +39,8 @@ const TONES = {
 };
 
 function BudgetRow({ budget }: { budget: Budget }) {
-  const spent = BigInt(budget.spentMinor);
-  const limit = BigInt(budget.limitMinor);
+  const spent = budget.spentMinor;
+  const limit = budget.limitMinor;
   const pct = Number((spent * 100n) / limit);
   const tone = TONES[pct > 100 ? 'over' : pct >= 80 ? 'near' : 'ok'];
   // El texto dice el estado; el color solo lo refuerza.

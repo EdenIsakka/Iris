@@ -11,8 +11,8 @@ export function MonthSummary() {
   if (error) return <Text>{error.message}</Text>;
   if (!data) return null;
 
-  const income = BigInt(data.incomeMinor);
-  const expense = BigInt(data.expenseMinor);
+  const income = data.incomeMinor;
+  const expense = data.expenseMinor;
   const balance = income - expense;
 
   // Lista simple (no FlatList): son pocas categorías y Resumen ya hace scroll.
@@ -33,7 +33,7 @@ export function MonthSummary() {
             <Row
               key={c.id ?? 'sin-categoria'}
               label={c.name ?? 'Sin categoría'}
-              value={formatMoney(BigInt(c.amountMinor))}
+              value={formatMoney(c.amountMinor)}
             />
           ))
         ) : (

@@ -1,86 +1,70 @@
+import { investmentsService } from '@finanzas/db';
 import type {
   CreateInvestmentInput,
   InvestmentPeriod,
   UpdateInvestmentInput,
 } from '@finanzas/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { api } from '@/lib/api-client';
+import { db } from '@/lib/db';
+
+const investments = investmentsService(db);
 
 export const investmentKeys = { all: ['investments'] as const };
+
+const GONE = 'Esta inversión ya no existe.';
 
 export function useInvestments(period: InvestmentPeriod) {
   return useQuery({
     queryKey: [...investmentKeys.all, period],
-    queryFn: async () => {
-      const res = await api.v1.investments.$get({ query: { period } });
-      if (!res.ok) throw new Error('No se pudieron cargar las inversiones');
-      return res.json();
-    },
+    queryFn: () => investments.list(period),
   });
 }
 
-export type Investment = NonNullable<ReturnType<typeof useInvestments>['data']>['items'][number];
+export type Investment = ReturnType<typeof investments.list>['items'][number];
 
 export function useValuations(id: string, period: InvestmentPeriod) {
   return useQuery({
     queryKey: [...investmentKeys.all, id, 'valuations', period],
-    queryFn: async () => {
-      const res = await api.v1.investments[':id'].valuations.$get({
-        param: { id },
-        query: { period },
-      });
-      if (!res.ok) throw new Error('No se pudo cargar el historial');
-      return res.json();
+    queryFn: () => {
+      const rows = investments.history(id, period);
+      if (!rows) throw new Error(GONE);
+      return rows;
     },
   });
 }
 
-/** Toda mutación cambia valores y totales: refresca todo lo de inversiones. */
-function useInvestmentMutation<T>(fn: (input: T) => Promise<void>) {
+/**
+ * Toda mutación cambia valores y totales: refresca todo lo de inversiones.
+ * `fn` devuelve false si la inversión ya no existe.
+ */
+function useInvestmentMutation<T>(fn: (input: T) => unknown) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: fn,
+    mutationFn: async (input: T) => {
+      if (fn(input) === false) throw new Error(GONE);
+    },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: investmentKeys.all }),
   });
 }
 
 export function useCreateInvestment() {
-  return useInvestmentMutation(async (input: CreateInvestmentInput) => {
-    const res = await api.v1.investments.$post({ json: input });
-    if (!res.ok) throw new Error('No se pudo crear la inversión');
-  });
+  return useInvestmentMutation((input: CreateInvestmentInput) => investments.create(input));
 }
 
 export function useUpdateInvestment(id: string) {
-  return useInvestmentMutation(async (input: UpdateInvestmentInput) => {
-    const res = await api.v1.investments[':id'].$put({ param: { id }, json: input });
-    if (!res.ok) throw new Error('No se pudo guardar la inversión');
-  });
+  return useInvestmentMutation(
+    (input: UpdateInvestmentInput) => investments.update(id, input) ?? false,
+  );
 }
 
 export function useDeleteInvestment() {
-  return useInvestmentMutation(async (id: string) => {
-    const res = await api.v1.investments[':id'].$delete({ param: { id } });
-    if (!res.ok) throw new Error('No se pudo borrar la inversión');
-  });
+  return useInvestmentMutation((id: string) => investments.remove(id));
 }
 
 export function useContributeInvestment(id: string) {
-  return useInvestmentMutation(async (amountMinor: string) => {
-    const res = await api.v1.investments[':id'].contributions.$post({
-      param: { id },
-      json: { amountMinor },
-    });
-    if (!res.ok) throw new Error('No se pudo guardar el aporte');
-  });
+  return useInvestmentMutation((amountMinor: string) => investments.contribute(id, amountMinor));
 }
 
 export function useValueInvestment(id: string) {
-  return useInvestmentMutation(async (valueMinor: string) => {
-    const res = await api.v1.investments[':id'].valuations.$post({
-      param: { id },
-      json: { valueMinor },
-    });
-    if (!res.ok) throw new Error('No se pudo guardar el valor');
-  });
+  return useInvestmentMutation((valueMinor: string) => investments.value(id, valueMinor));
 }

@@ -21,7 +21,7 @@ export function WalletForm({ onSaved, wallet, footer }: Props) {
   const [type, setType] = useState<WalletType>(wallet?.type ?? 'cash');
   // AmountInput deja '' para 0.
   const [opening, setOpening] = useState(
-    wallet && wallet.openingBalanceMinor !== '0' ? wallet.openingBalanceMinor : '',
+    wallet && wallet.openingBalanceMinor !== 0n ? wallet.openingBalanceMinor.toString() : '',
   );
   const [error, setError] = useState<string | null>(null);
 

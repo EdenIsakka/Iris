@@ -4,8 +4,8 @@ import { FlatList, Pressable, View } from 'react-native';
 import { Text } from '@/components/ui/text';
 import { type Transaction, useCategories, useTransactions } from '../api';
 
-const dayLabel = (iso: string) =>
-  new Date(iso).toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long' });
+const dayLabel = (date: Date) =>
+  date.toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long' });
 
 export function TransactionList() {
   const { data, isLoading, error, hasNextPage, fetchNextPage, isFetchingNextPage } =
@@ -97,7 +97,7 @@ function TransactionRow({ item, category, first, last }: RowProps) {
         </View>
         <Text className={`text-[17px] font-medium ${income ? 'text-positive' : ''}`}>
           {income ? '+' : '−'}
-          {formatMoney(BigInt(item.amountMinor))}
+          {formatMoney(item.amountMinor)}
         </Text>
       </Pressable>
     </Link>

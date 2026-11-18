@@ -4,19 +4,7 @@ export default {
     'scope-enum': [
       1,
       'always',
-      [
-        'mobile',
-        'api',
-        'shared',
-        'db',
-        'ci',
-        'docs',
-        'deps',
-        'transactions',
-        'goals',
-        'budgets',
-        'auth',
-      ],
+      ['mobile', 'shared', 'db', 'ci', 'docs', 'deps', 'transactions', 'goals', 'budgets', 'auth'],
     ],
   },
 };

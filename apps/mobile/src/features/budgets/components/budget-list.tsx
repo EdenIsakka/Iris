@@ -46,7 +46,7 @@ export function BudgetList() {
                 {item.name}
               </Text>
               <Text className={`text-[17px] ${budget ? '' : 'text-secondary'}`}>
-                {budget ? formatMoney(BigInt(budget.limitMinor)) : 'Sin tope'}
+                {budget ? formatMoney(budget.limitMinor) : 'Sin tope'}
               </Text>
             </Pressable>
           </Link>

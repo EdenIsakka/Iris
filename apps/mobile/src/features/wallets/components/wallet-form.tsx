@@ -1,10 +1,16 @@
-import { createWalletSchema, type WalletType, walletType } from '@finanzas/shared';
+import {
+  CURRENCIES,
+  type Currency,
+  createWalletSchema,
+  type WalletType,
+  walletType,
+} from '@finanzas/shared';
 import { type ReactNode, useState } from 'react';
 import { View } from 'react-native';
 import { AmountInput } from '@/components/ui/amount-input';
 import { Chip } from '@/components/ui/chip';
 import { Button, FieldLabel, Form, FormError, inputClassName } from '@/components/ui/form';
-import { TextInput } from '@/components/ui/text';
+import { Text, TextInput } from '@/components/ui/text';
 import { useSaveWallet, type Wallet } from '../api';
 import { TYPE_LABELS } from '../labels';
 
@@ -19,6 +25,7 @@ export function WalletForm({ onSaved, wallet, footer }: Props) {
   const save = useSaveWallet(wallet?.id);
   const [name, setName] = useState(wallet?.name ?? '');
   const [type, setType] = useState<WalletType>(wallet?.type ?? 'cash');
+  const [currency, setCurrency] = useState<Currency>(wallet?.currency ?? 'COP');
   // AmountInput deja '' para 0.
   const [opening, setOpening] = useState(
     wallet && wallet.openingBalanceMinor !== 0n ? wallet.openingBalanceMinor.toString() : '',
@@ -29,6 +36,7 @@ export function WalletForm({ onSaved, wallet, footer }: Props) {
     const parsed = createWalletSchema.safeParse({
       name,
       type,
+      currency,
       openingBalanceMinor: opening || '0',
     });
     if (!parsed.success) return setError('Escribe un nombre.');
@@ -56,10 +64,23 @@ export function WalletForm({ onSaved, wallet, footer }: Props) {
         ))}
       </View>
 
+      <FieldLabel>Moneda</FieldLabel>
+      {wallet ? (
+        // Sus movimientos ya están en esta moneda; cambiarla los dejaría mal.
+        <Text className="text-secondary">{currency}. No se puede cambiar.</Text>
+      ) : (
+        <View className="flex-row flex-wrap gap-2">
+          {CURRENCIES.map((c) => (
+            <Chip key={c} label={c} selected={c === currency} onPress={() => setCurrency(c)} />
+          ))}
+        </View>
+      )}
+
       <AmountInput
-        label="¿Cuánto tenía antes de usar la app? (COP)"
+        label={`¿Cuánto tenía antes de usar la app? (${currency})`}
         value={opening}
         onChangeValue={setOpening}
+        currency={currency}
       />
 
       <FormError message={error ?? save.error?.message} />

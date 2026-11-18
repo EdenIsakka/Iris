@@ -1,4 +1,4 @@
-import { formatMoney } from '@finanzas/shared';
+import { type Currency, formatMoney } from '@finanzas/shared';
 import { FieldLabel, inputClassName } from '@/components/ui/form';
 import { Text, TextInput } from '@/components/ui/text';
 
@@ -7,10 +7,14 @@ type Props = {
   value: string;
   onChangeValue: (digits: string) => void;
   autoFocus?: boolean;
+  currency?: Currency;
 };
 
-/** Monto en pesos: solo dígitos, sin ceros iniciales y hasta 15 dígitos, como pide `amountMinor`. */
-export function AmountInput({ label, value, onChangeValue, autoFocus }: Props) {
+/**
+ * Monto en unidad mínima: solo dígitos, sin ceros iniciales y hasta 15 dígitos, como pide
+ * `amountMinor`. En USD se escriben centavos (1234 = US$12,34); debajo se ve cómo queda.
+ */
+export function AmountInput({ label, value, onChangeValue, autoFocus, currency = 'COP' }: Props) {
   return (
     <>
       <FieldLabel>{label}</FieldLabel>
@@ -24,7 +28,9 @@ export function AmountInput({ label, value, onChangeValue, autoFocus }: Props) {
         accessibilityLabel={label}
         autoFocus={autoFocus}
       />
-      {value ? <Text className="text-secondary">{formatMoney(BigInt(value))}</Text> : null}
+      {value ? (
+        <Text className="text-secondary">{formatMoney(BigInt(value), currency)}</Text>
+      ) : null}
     </>
   );
 }

@@ -1,3 +1,4 @@
+import { CURRENCIES } from '@finanzas/shared';
 import { sql } from 'drizzle-orm';
 import { customType, index, integer, sqliteTable, text, unique } from 'drizzle-orm/sqlite-core';
 
@@ -16,7 +17,7 @@ const createdAt = () =>
   integer({ mode: 'timestamp_ms' })
     .notNull()
     .$defaultFn(() => new Date());
-const currency = () => text().notNull().default('COP');
+const currency = () => text({ enum: CURRENCIES }).notNull().default('COP');
 const kind = () => text({ enum: ['income', 'expense'] }).notNull();
 
 export const wallets = sqliteTable('wallets', {
@@ -134,3 +135,9 @@ export const investmentValuations = sqliteTable(
   },
   (t) => [index('investment_valuations_idx').on(t.investmentId, t.occurredAt)],
 );
+
+/** TRM de cada día publicado (date = 'YYYY-MM-DD'), en centavos de peso por dólar. */
+export const trm = sqliteTable('trm', {
+  date: text().primaryKey(),
+  rateMinor: money().notNull(),
+});

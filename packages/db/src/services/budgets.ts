@@ -3,6 +3,7 @@ import { and, desc, eq, gte, lte, sql } from 'drizzle-orm';
 import type { Db } from '../db';
 import { monthKey, monthStart } from '../month';
 import { budgets, categories, transactions } from '../schema';
+import { inCop } from './trm';
 
 /** 'YYYY-MM-01' del mes en curso (hora de Colombia). */
 const currentPeriod = (now: Date) => `${monthKey(now)}-01`;
@@ -47,7 +48,10 @@ export function budgetsService(db: Db) {
       const spent = db
         .select({
           categoryId: transactions.categoryId,
-          total: sql<bigint>`coalesce(sum(${transactions.amountMinor}), 0)`.mapWith(BigInt),
+          total:
+            sql<bigint>`coalesce(sum(${inCop(transactions.amountMinor, transactions.currency)}), 0)`.mapWith(
+              BigInt,
+            ),
         })
         .from(transactions)
         .where(and(eq(transactions.kind, 'expense'), gte(transactions.occurredAt, monthStart(now))))

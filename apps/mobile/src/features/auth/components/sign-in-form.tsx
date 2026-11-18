@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, View } from 'react-native';
+import { Button, FieldLabel, FormError, inputClassName } from '@/components/ui/form';
 import { Text, TextInput } from '@/components/ui/text';
 import { authClient } from '@/lib/auth-client';
 
@@ -29,73 +30,62 @@ export function SignInForm() {
   }
 
   return (
-    <View style={styles.form}>
-      <Text style={styles.title} accessibilityRole="header">
+    <View className="flex-1 justify-center gap-2 p-6">
+      <Text className="mb-4 text-[34px] font-bold tracking-tight" accessibilityRole="header">
         {signingUp ? 'Crea tu cuenta' : 'Inicia sesión'}
       </Text>
 
       {signingUp ? (
         <>
-          <Text style={styles.label}>Nombre</Text>
+          <FieldLabel nativeID="name-label">Nombre</FieldLabel>
           <TextInput
-            style={styles.input}
+            className={`${inputClassName} text-[17px]`}
             value={name}
             onChangeText={setName}
             autoComplete="name"
-            accessibilityLabel="Nombre"
+            accessibilityLabelledBy="name-label"
           />
         </>
       ) : null}
 
-      <Text style={styles.label}>Correo</Text>
+      <FieldLabel nativeID="email-label">Correo</FieldLabel>
       <TextInput
-        style={styles.input}
+        className={`${inputClassName} text-[17px]`}
         value={email}
         onChangeText={setEmail}
         autoCapitalize="none"
         autoComplete="email"
         keyboardType="email-address"
-        accessibilityLabel="Correo"
+        accessibilityLabelledBy="email-label"
       />
 
-      <Text style={styles.label}>Contraseña</Text>
+      <FieldLabel nativeID="password-label">Contraseña</FieldLabel>
       <TextInput
-        style={styles.input}
+        className={`${inputClassName} text-[17px]`}
         value={password}
         onChangeText={setPassword}
         secureTextEntry
         autoComplete={signingUp ? 'new-password' : 'current-password'}
-        accessibilityLabel="Contraseña"
+        accessibilityLabelledBy="password-label"
       />
-      {signingUp ? <Text style={styles.hint}>Mínimo 8 caracteres.</Text> : null}
+      {signingUp ? <Text className="text-[13px] text-secondary">Mínimo 8 caracteres.</Text> : null}
 
-      {error ? (
-        <Text style={styles.error} accessibilityRole="alert">
-          {error}
-        </Text>
-      ) : null}
-
-      <Pressable
-        style={[styles.button, pending && styles.disabled]}
+      <FormError message={error} />
+      <Button
+        label={pending ? 'Un momento…' : signingUp ? 'Crear cuenta' : 'Entrar'}
         onPress={submit}
         disabled={pending}
-        accessibilityRole="button"
-        accessibilityState={{ disabled: pending }}
-      >
-        <Text style={styles.buttonText}>
-          {pending ? 'Un momento…' : signingUp ? 'Crear cuenta' : 'Entrar'}
-        </Text>
-      </Pressable>
+      />
 
       <Pressable
-        style={styles.switch}
+        className="min-h-[44px] items-center justify-center"
         onPress={() => {
           setMode(signingUp ? 'sign-in' : 'sign-up');
           setError(null);
         }}
         accessibilityRole="button"
       >
-        <Text style={styles.switchText}>
+        <Text className="text-[15px] text-accent">
           {signingUp ? 'Ya tengo cuenta: iniciar sesión' : '¿No tienes cuenta? Crea una'}
         </Text>
       </Pressable>
@@ -118,24 +108,3 @@ function messageFor(code?: string) {
       return 'No se pudo continuar. Revisa tu conexión e intenta de nuevo.';
   }
 }
-
-const styles = StyleSheet.create({
-  form: { flex: 1, justifyContent: 'center', padding: 24, gap: 8 },
-  title: { fontSize: 28, fontWeight: '700', marginBottom: 8 },
-  label: { fontWeight: '600', marginTop: 8 },
-  input: { borderWidth: 1, borderColor: '#999', borderRadius: 8, padding: 12, fontSize: 18 },
-  hint: { color: '#555' },
-  error: { color: '#b00020' },
-  button: {
-    marginTop: 16,
-    minHeight: 48,
-    borderRadius: 8,
-    backgroundColor: '#1b5e20',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  disabled: { opacity: 0.6 },
-  buttonText: { color: '#fff', fontWeight: '700', fontSize: 16 },
-  switch: { minHeight: 44, alignItems: 'center', justifyContent: 'center' },
-  switchText: { color: '#1b5e20', fontWeight: '600' },
-});

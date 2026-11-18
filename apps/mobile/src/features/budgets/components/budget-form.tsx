@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet } from 'react-native';
 import { AmountInput } from '@/components/ui/amount-input';
+import { Button, Form, FormError } from '@/components/ui/form';
 import { Text } from '@/components/ui/text';
 import { useCategories } from '@/features/transactions/api';
 import { useBudgets, useDeleteBudget, useSaveBudget } from '../api';
@@ -11,18 +11,24 @@ export function BudgetForm({ categoryId, onDone }: Props) {
   const categories = useCategories();
   const budgets = useBudgets();
 
-  if (categories.isLoading || budgets.isLoading) return <Text style={styles.pad}>Cargando…</Text>;
+  if (categories.isLoading || budgets.isLoading) {
+    return <Text className="p-4 text-secondary">Cargando…</Text>;
+  }
   const category = categories.data?.find((c) => c.id === categoryId);
-  if (!category) return <Text style={styles.pad}>No encontramos esta categoría.</Text>;
+  if (!category) return <Text className="p-4">No encontramos esta categoría.</Text>;
   const current = budgets.data?.find((b) => b.categoryId === categoryId)?.limitMinor;
 
   // key: el estado del monto arranca con el tope ya cargado.
   return (
-    <Form key={current ?? 'sin-tope'} {...{ categoryId, onDone, current }} name={category.name} />
+    <LimitForm
+      key={current ?? 'sin-tope'}
+      {...{ categoryId, onDone, current }}
+      name={category.name}
+    />
   );
 }
 
-function Form({
+function LimitForm({
   categoryId,
   onDone,
   current,
@@ -40,10 +46,9 @@ function Form({
     save.mutate(limit, { onSuccess: onDone });
   }
 
-  const message = error ?? save.error?.message ?? remove.error?.message;
   return (
-    <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled">
-      <Text style={styles.title} accessibilityRole="header">
+    <Form>
+      <Text className="px-1 pb-2 text-[28px] font-bold tracking-tight" accessibilityRole="header">
         {name}
       </Text>
       <AmountInput
@@ -52,62 +57,22 @@ function Form({
         onChangeValue={setLimit}
         autoFocus
       />
-      <Text style={styles.hint}>Vale desde este mes hasta que lo cambies.</Text>
+      <Text className="text-[13px] text-secondary">Vale desde este mes hasta que lo cambies.</Text>
 
-      {message ? (
-        <Text style={styles.error} accessibilityRole="alert">
-          {message}
-        </Text>
-      ) : null}
-
-      <Pressable
-        style={[styles.button, busy && styles.disabled]}
+      <FormError message={error ?? save.error?.message ?? remove.error?.message} />
+      <Button
+        label={save.isPending ? 'Guardando…' : 'Guardar tope'}
         onPress={submit}
         disabled={busy}
-        accessibilityRole="button"
-        accessibilityState={{ disabled: busy }}
-      >
-        <Text style={styles.buttonText}>{save.isPending ? 'Guardando…' : 'Guardar tope'}</Text>
-      </Pressable>
+      />
       {current ? (
-        <Pressable
-          style={[styles.remove, busy && styles.disabled]}
+        <Button
+          destructive
+          label={remove.isPending ? 'Quitando…' : 'Quitar tope'}
           onPress={() => remove.mutate(undefined, { onSuccess: onDone })}
           disabled={busy}
-          accessibilityRole="button"
-          accessibilityState={{ disabled: busy }}
-        >
-          <Text style={styles.removeText}>{remove.isPending ? 'Quitando…' : 'Quitar tope'}</Text>
-        </Pressable>
+        />
       ) : null}
-    </ScrollView>
+    </Form>
   );
 }
-
-const styles = StyleSheet.create({
-  pad: { padding: 16 },
-  form: { padding: 16, gap: 8 },
-  title: { fontSize: 18, fontWeight: '700' },
-  hint: { color: '#555' },
-  error: { color: '#b00020' },
-  button: {
-    marginTop: 16,
-    minHeight: 48,
-    borderRadius: 8,
-    backgroundColor: '#1b5e20',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  disabled: { opacity: 0.6 },
-  buttonText: { color: '#fff', fontWeight: '700', fontSize: 16 },
-  remove: {
-    marginTop: 8,
-    minHeight: 48,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#b00020',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  removeText: { color: '#b00020', fontWeight: '700', fontSize: 16 },
-});

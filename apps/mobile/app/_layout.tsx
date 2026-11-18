@@ -4,14 +4,17 @@ import { Stack, ThemeProvider } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { ActivityIndicator, useColorScheme, View } from 'react-native';
 import { authClient } from '@/lib/auth-client';
+import { loadColorScheme } from '@/lib/color-scheme';
 import { queryClient } from '@/lib/query-client';
 import { navigationTheme, themeVars } from '@/lib/theme';
+
+loadColorScheme();
 
 const modal = (title: string) => ({ presentation: 'modal' as const, headerShown: true, title });
 
 export default function RootLayout() {
   const { data: session, isPending } = authClient.useSession();
-  // Claro u oscuro según el teléfono.
+  // Claro u oscuro según el teléfono, o lo que se eligió en el menú de apariencia.
   const scheme = useColorScheme() === 'dark' ? 'dark' : 'light';
 
   return (

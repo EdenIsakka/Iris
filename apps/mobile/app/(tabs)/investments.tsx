@@ -9,7 +9,7 @@ export default function InvestmentsScreen() {
   const [period, setPeriod] = useState<InvestmentPeriod>('month');
   return (
     <Screen title="Inversiones">
-      <LinkButton href="/investments/new" label="+ Nueva inversión" />
+      <LinkButton href="/investments/new" label="Nueva inversión" />
       <PeriodChips value={period} onChange={setPeriod} />
       <InvestmentList period={period} />
     </Screen>

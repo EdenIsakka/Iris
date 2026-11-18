@@ -6,10 +6,11 @@ import {
 } from '@finanzas/shared';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { type ReactNode, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 import { AmountInput } from '@/components/ui/amount-input';
 import { Chip } from '@/components/ui/chip';
-import { Text, TextInput } from '@/components/ui/text';
+import { Button, FieldLabel, Form, FormError, inputClassName } from '@/components/ui/form';
+import { TextInput } from '@/components/ui/text';
 import { formatDate } from '@/lib/format-date';
 import { type Investment, useCreateInvestment, useUpdateInvestment } from '../api';
 import { KIND_LABELS } from '../format';
@@ -62,12 +63,10 @@ export function InvestmentForm({ onSaved, investment, footer }: Props) {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled">
-      <Text style={styles.label} nativeID="investment-name-label">
-        Nombre
-      </Text>
+    <Form>
+      <FieldLabel nativeID="investment-name-label">Nombre</FieldLabel>
       <TextInput
-        style={styles.input}
+        className={`${inputClassName} text-[17px]`}
         value={name}
         onChangeText={setName}
         placeholder="Ej. Bitcoin, acciones Ecopetrol"
@@ -76,8 +75,8 @@ export function InvestmentForm({ onSaved, investment, footer }: Props) {
         autoFocus={!investment}
       />
 
-      <Text style={styles.label}>Tipo</Text>
-      <View style={styles.row}>
+      <FieldLabel>Tipo</FieldLabel>
+      <View className="flex-row flex-wrap gap-2">
         {investmentKind.options.map((k) => (
           <Chip key={k} label={KIND_LABELS[k]} selected={k === kind} onPress={() => setKind(k)} />
         ))}
@@ -87,8 +86,8 @@ export function InvestmentForm({ onSaved, investment, footer }: Props) {
         <>
           <AmountInput label="¿Cuánto invertiste? (COP)" value={amount} onChangeValue={setAmount} />
 
-          <Text style={styles.label}>¿Desde cuándo?</Text>
-          <View style={styles.row}>
+          <FieldLabel>¿Desde cuándo?</FieldLabel>
+          <View className="flex-row flex-wrap gap-2">
             <Chip
               label="Hoy"
               selected={isToday(startedAt)}
@@ -122,42 +121,13 @@ export function InvestmentForm({ onSaved, investment, footer }: Props) {
         </>
       )}
 
-      {error || save.error ? (
-        <Text style={styles.error} accessibilityRole="alert">
-          {error ?? save.error?.message}
-        </Text>
-      ) : null}
-
-      <Pressable
-        style={[styles.button, save.isPending && styles.buttonDisabled]}
+      <FormError message={error ?? save.error?.message} />
+      <Button
+        label={save.isPending ? 'Guardando…' : investment ? 'Guardar' : 'Agregar inversión'}
         onPress={submit}
         disabled={save.isPending}
-        accessibilityRole="button"
-        accessibilityState={{ disabled: save.isPending }}
-      >
-        <Text style={styles.buttonText}>
-          {save.isPending ? 'Guardando…' : investment ? 'Guardar' : 'Agregar inversión'}
-        </Text>
-      </Pressable>
+      />
       {footer}
-    </ScrollView>
+    </Form>
   );
 }
-
-const styles = StyleSheet.create({
-  form: { padding: 16, gap: 8 },
-  row: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  label: { fontWeight: '600', marginTop: 8 },
-  input: { borderWidth: 1, borderColor: '#999', borderRadius: 8, padding: 12, fontSize: 18 },
-  error: { color: '#b00020' },
-  button: {
-    marginTop: 16,
-    minHeight: 48,
-    borderRadius: 8,
-    backgroundColor: '#1b5e20',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  buttonDisabled: { opacity: 0.6 },
-  buttonText: { color: '#fff', fontWeight: '700', fontSize: 16 },
-});

@@ -1,8 +1,8 @@
 import { createGoalSchema } from '@finanzas/shared';
 import { type ReactNode, useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
 import { AmountInput } from '@/components/ui/amount-input';
-import { Text, TextInput } from '@/components/ui/text';
+import { Button, FieldLabel, Form, FormError, inputClassName } from '@/components/ui/form';
+import { TextInput } from '@/components/ui/text';
 import { type Goal, useCreateGoal, useUpdateGoal } from '../api';
 
 type Props = {
@@ -32,17 +32,14 @@ export function GoalForm({ onSaved, goal, footer }: Props) {
   }
 
   return (
-    <View style={styles.form}>
-      <Text style={styles.label} nativeID="goal-name-label">
-        Nombre
-      </Text>
+    <Form>
+      <FieldLabel nativeID="goal-name-label">Nombre</FieldLabel>
       <TextInput
-        style={styles.input}
+        className={`${inputClassName} text-[17px]`}
         value={name}
         onChangeText={setName}
         placeholder="Ej. Viaje, fondo de emergencia"
         maxLength={80}
-        accessibilityLabel="Nombre de la meta"
         accessibilityLabelledBy="goal-name-label"
         autoFocus={!goal}
       />
@@ -53,41 +50,13 @@ export function GoalForm({ onSaved, goal, footer }: Props) {
         onChangeValue={setTarget}
       />
 
-      {error || save.error ? (
-        <Text style={styles.error} accessibilityRole="alert">
-          {error ?? save.error?.message}
-        </Text>
-      ) : null}
-
-      <Pressable
-        style={[styles.button, save.isPending && styles.buttonDisabled]}
+      <FormError message={error ?? save.error?.message} />
+      <Button
+        label={save.isPending ? 'Guardando…' : goal ? 'Guardar' : 'Crear meta'}
         onPress={submit}
         disabled={save.isPending}
-        accessibilityRole="button"
-        accessibilityState={{ disabled: save.isPending }}
-      >
-        <Text style={styles.buttonText}>
-          {save.isPending ? 'Guardando…' : goal ? 'Guardar' : 'Crear meta'}
-        </Text>
-      </Pressable>
+      />
       {footer}
-    </View>
+    </Form>
   );
 }
-
-const styles = StyleSheet.create({
-  form: { padding: 16, gap: 8 },
-  label: { fontWeight: '600', marginTop: 8 },
-  input: { borderWidth: 1, borderColor: '#999', borderRadius: 8, padding: 12, fontSize: 18 },
-  error: { color: '#b00020' },
-  button: {
-    marginTop: 16,
-    minHeight: 48,
-    borderRadius: 8,
-    backgroundColor: '#1b5e20',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  buttonDisabled: { opacity: 0.6 },
-  buttonText: { color: '#fff', fontWeight: '700', fontSize: 16 },
-});

@@ -1,4 +1,5 @@
-import { Alert, Pressable, StyleSheet } from 'react-native';
+import { Alert } from 'react-native';
+import { Button } from '@/components/ui/form';
 import { Text } from '@/components/ui/text';
 import { useDeleteGoal, useGoals } from '../api';
 import { GoalForm } from './goal-form';
@@ -9,10 +10,10 @@ export function EditGoal({ id, onSaved, onDeleted }: Props) {
   const { data, isLoading, error } = useGoals();
   const remove = useDeleteGoal();
 
-  if (isLoading) return <Text style={styles.pad}>Cargando…</Text>;
-  if (error) return <Text style={styles.pad}>{error.message}</Text>;
+  if (isLoading) return <Text className="p-4 text-secondary">Cargando…</Text>;
+  if (error) return <Text className="p-4">{error.message}</Text>;
   const goal = data?.find((g) => g.id === id);
-  if (!goal) return <Text style={styles.pad}>No encontramos esta meta.</Text>;
+  if (!goal) return <Text className="p-4">No encontramos esta meta.</Text>;
 
   function confirmDelete() {
     Alert.alert('¿Borrar esta meta?', 'También se borran sus aportes. No se puede deshacer.', [
@@ -34,30 +35,13 @@ export function EditGoal({ id, onSaved, onDeleted }: Props) {
       goal={goal}
       onSaved={onSaved}
       footer={
-        <Pressable
-          style={styles.delete}
+        <Button
+          destructive
+          label={remove.isPending ? 'Borrando…' : 'Borrar meta'}
           onPress={confirmDelete}
           disabled={remove.isPending}
-          accessibilityRole="button"
-          accessibilityState={{ disabled: remove.isPending }}
-        >
-          <Text style={styles.deleteText}>{remove.isPending ? 'Borrando…' : 'Borrar meta'}</Text>
-        </Pressable>
+        />
       }
     />
   );
 }
-
-const styles = StyleSheet.create({
-  pad: { padding: 16 },
-  delete: {
-    marginTop: 8,
-    minHeight: 48,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#b00020',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  deleteText: { color: '#b00020', fontWeight: '700', fontSize: 16 },
-});

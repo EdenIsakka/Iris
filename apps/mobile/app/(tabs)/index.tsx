@@ -10,7 +10,7 @@ import { WalletsSummary } from '@/features/wallets/components/wallets-summary';
 export default function DashboardScreen() {
   return (
     <Screen title="Resumen">
-      <ScrollView contentContainerStyle={{ gap: 24, paddingBottom: 16 }}>
+      <ScrollView className="-mx-4" contentContainerClassName="gap-6 px-4 pb-4">
         <WalletsSummary />
         <MonthSummary />
         <MonthlyChart />

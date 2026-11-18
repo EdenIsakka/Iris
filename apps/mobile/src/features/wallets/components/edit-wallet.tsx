@@ -1,4 +1,5 @@
-import { Alert, Pressable, StyleSheet } from 'react-native';
+import { Alert } from 'react-native';
+import { Button } from '@/components/ui/form';
 import { Text } from '@/components/ui/text';
 import { useDeleteWallet, useWallets } from '../api';
 import { WalletForm } from './wallet-form';
@@ -9,10 +10,10 @@ export function EditWallet({ id, onDone }: Props) {
   const { data, isLoading, error } = useWallets();
   const remove = useDeleteWallet();
 
-  if (isLoading) return <Text style={styles.pad}>Cargando…</Text>;
-  if (error) return <Text style={styles.pad}>{error.message}</Text>;
+  if (isLoading) return <Text className="p-4 text-secondary">Cargando…</Text>;
+  if (error) return <Text className="p-4">{error.message}</Text>;
   const wallet = data?.find((w) => w.id === id);
-  if (!wallet) return <Text style={styles.pad}>No encontramos esta billetera.</Text>;
+  if (!wallet) return <Text className="p-4">No encontramos esta billetera.</Text>;
 
   function confirmDelete() {
     Alert.alert('¿Borrar esta billetera?', 'No se puede deshacer.', [
@@ -34,32 +35,13 @@ export function EditWallet({ id, onDone }: Props) {
       wallet={wallet}
       onSaved={onDone}
       footer={
-        <Pressable
-          style={styles.delete}
+        <Button
+          destructive
+          label={remove.isPending ? 'Borrando…' : 'Borrar billetera'}
           onPress={confirmDelete}
           disabled={remove.isPending}
-          accessibilityRole="button"
-          accessibilityState={{ disabled: remove.isPending }}
-        >
-          <Text style={styles.deleteText}>
-            {remove.isPending ? 'Borrando…' : 'Borrar billetera'}
-          </Text>
-        </Pressable>
+        />
       }
     />
   );
 }
-
-const styles = StyleSheet.create({
-  pad: { padding: 16 },
-  delete: {
-    marginTop: 8,
-    minHeight: 48,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#b00020',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  deleteText: { color: '#b00020', fontWeight: '700', fontSize: 16 },
-});

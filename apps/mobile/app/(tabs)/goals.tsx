@@ -5,7 +5,7 @@ import { GoalList } from '@/features/goals/components/goal-list';
 export default function GoalsScreen() {
   return (
     <Screen title="Metas">
-      <LinkButton href="/goals/new" label="+ Nueva meta" />
+      <LinkButton href="/goals/new" label="Nueva meta" />
       <GoalList />
     </Screen>
   );

@@ -1,8 +1,9 @@
 import { contributeToGoalSchema, formatMoney } from '@finanzas/shared';
 import { Link } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { AmountInput } from '@/components/ui/amount-input';
+import { Button, Form, FormError } from '@/components/ui/form';
 import { Text } from '@/components/ui/text';
 import { useContribute, useGoals } from '../api';
 
@@ -14,10 +15,10 @@ export function ContributionForm({ goalId, onSaved }: Props) {
   const [amount, setAmount] = useState('');
   const [error, setError] = useState<string | null>(null);
 
-  if (goals.isLoading) return <Text style={styles.pad}>Cargando…</Text>;
-  if (goals.error) return <Text style={styles.pad}>{goals.error.message}</Text>;
+  if (goals.isLoading) return <Text className="p-4 text-secondary">Cargando…</Text>;
+  if (goals.error) return <Text className="p-4">{goals.error.message}</Text>;
   const goal = goals.data?.find((g) => g.id === goalId);
-  if (!goal) return <Text style={styles.pad}>No encontramos esta meta.</Text>;
+  if (!goal) return <Text className="p-4">No encontramos esta meta.</Text>;
 
   const saved = BigInt(goal.savedMinor);
   const missing = BigInt(goal.targetMinor) - saved;
@@ -32,12 +33,14 @@ export function ContributionForm({ goalId, onSaved }: Props) {
   }
 
   return (
-    <View style={styles.form}>
-      <Text style={styles.title}>{goal.name}</Text>
-      <Text>
-        Llevas {formatMoney(saved)}.{' '}
-        {missing > 0n ? `Te faltan ${formatMoney(missing)}.` : '¡Ya cumpliste la meta!'}
-      </Text>
+    <Form>
+      <View className="gap-1 rounded-2xl bg-card px-4 py-3">
+        <Text className="text-[20px] font-semibold">{goal.name}</Text>
+        <Text className="text-[15px] text-secondary">
+          Llevas {formatMoney(saved)}.{' '}
+          {missing > 0n ? `Te faltan ${formatMoney(missing)}.` : '¡Ya cumpliste la meta!'}
+        </Text>
+      </View>
 
       <AmountInput
         label="¿Cuánto vas a aportar? (COP)"
@@ -46,46 +49,18 @@ export function ContributionForm({ goalId, onSaved }: Props) {
         autoFocus
       />
 
-      {error || contribute.error ? (
-        <Text style={styles.error} accessibilityRole="alert">
-          {error ?? contribute.error?.message}
-        </Text>
-      ) : null}
-
-      <Pressable
-        style={[styles.button, contribute.isPending && styles.buttonDisabled]}
+      <FormError message={error ?? contribute.error?.message} />
+      <Button
+        label={contribute.isPending ? 'Guardando…' : 'Aportar'}
         onPress={submit}
         disabled={contribute.isPending}
-        accessibilityRole="button"
-        accessibilityState={{ disabled: contribute.isPending }}
-      >
-        <Text style={styles.buttonText}>{contribute.isPending ? 'Guardando…' : 'Aportar'}</Text>
-      </Pressable>
+      />
 
       <Link href={{ pathname: '/goals/[id]/edit', params: { id: goalId } }} asChild>
-        <Pressable style={styles.link} accessibilityRole="button">
-          <Text style={styles.linkText}>Editar o borrar meta</Text>
+        <Pressable className="min-h-[44px] items-center justify-center" accessibilityRole="button">
+          <Text className="text-[17px] text-accent">Editar o borrar meta</Text>
         </Pressable>
       </Link>
-    </View>
+    </Form>
   );
 }
-
-const styles = StyleSheet.create({
-  pad: { padding: 16 },
-  form: { padding: 16, gap: 8 },
-  title: { fontSize: 20, fontWeight: '700' },
-  error: { color: '#b00020' },
-  button: {
-    marginTop: 16,
-    minHeight: 48,
-    borderRadius: 8,
-    backgroundColor: '#1b5e20',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  buttonDisabled: { opacity: 0.6 },
-  buttonText: { color: '#fff', fontWeight: '700', fontSize: 16 },
-  link: { minHeight: 44, alignItems: 'center', justifyContent: 'center' },
-  linkText: { color: '#1b5e20', fontWeight: '600' },
-});

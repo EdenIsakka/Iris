@@ -1,17 +1,20 @@
 {
   "expo": {
-    "name": "Finanzas",
-    "slug": "finanzas-app",
-    "scheme": "finanzas",
+    "name": "Iris",
+    "slug": "iris",
+    "scheme": "iris",
     "version": "0.1.0",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "ios": {
-      "bundleIdentifier": "com.julianisaza.finanzas"
+      "bundleIdentifier": "com.julianisaza.iris"
     },
     "android": {
-      "package": "com.julianisaza.finanzas"
+      "package": "com.julianisaza.iris",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0B1026"
+      }
     },
     "web": {
       "bundler": "metro",
@@ -21,10 +24,18 @@
       "expo-router",
       "@react-native-community/datetimepicker",
       "expo-secure-store",
-      "expo-sqlite"
+      "expo-sqlite",
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "icon": "./assets/icon.png",
+    "extra": {
+      "eas": {
+        "projectId": "4a53912e-e546-4715-9c47-bc43c506b000"
+      }
+    },
+    "owner": "wonters-team"
   }
 }

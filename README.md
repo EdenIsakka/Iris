@@ -1,4 +1,4 @@
-# Finanzas
+# Iris
 
 Gestor de finanzas personales pensado para el celular: registra ingresos y gastos, fija topes por categoría, crea metas de ahorro y sigue tus inversiones.
 
@@ -39,6 +39,17 @@ pnpm dev
 ```
 
 Escanea el código QR con Expo Go.
+
+## Generar la APK
+
+Con una cuenta de Expo (gratis) y el proyecto conectado con `eas init`:
+
+```bash
+cd apps/mobile
+npx eas-cli@latest build --profile preview --platform android
+```
+
+EAS compila en la nube y da un enlace para bajar la APK, que se sube a GitHub Releases.
 
 ## Scripts
 

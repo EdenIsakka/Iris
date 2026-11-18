@@ -8,6 +8,7 @@ const toRow = (raw: CreateWalletInput) => {
   return {
     name: input.name,
     type: input.type,
+    currency: input.currency,
     openingBalanceMinor: BigInt(input.openingBalanceMinor),
   };
 };
@@ -42,7 +43,13 @@ export function walletsService(db: Db) {
     /** null si no existe. */
     update(id: string, input: CreateWalletInput) {
       return (
-        db.update(wallets).set(toRow(input)).where(eq(wallets.id, id)).returning().get() ?? null
+        // La moneda no cambia: sus movimientos ya están en ella. Drizzle omite los undefined.
+        db
+          .update(wallets)
+          .set({ ...toRow(input), currency: undefined })
+          .where(eq(wallets.id, id))
+          .returning()
+          .get() ?? null
       );
     },
 

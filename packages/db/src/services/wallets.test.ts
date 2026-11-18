@@ -43,6 +43,15 @@ describe('walletsService', () => {
     expect(wallets.remove(id)).toBe('not-found');
   });
 
+  it('la moneda se elige al crear y no cambia al editar', () => {
+    const { wallets } = setup();
+    const { id, currency } = wallets.create({ name: 'Dólares', type: 'bank', currency: 'USD' });
+    expect(currency).toBe('USD');
+    expect(wallets.update(id, { name: 'USD', type: 'bank', currency: 'COP' })?.currency).toBe(
+      'USD',
+    );
+  });
+
   it('rechaza un saldo inicial negativo o de más de 15 dígitos', () => {
     const { wallets } = setup();
     expect(() => wallets.create({ name: 'X', type: 'bank', openingBalanceMinor: '-1' })).toThrow();

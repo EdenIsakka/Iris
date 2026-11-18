@@ -7,11 +7,16 @@ import { and, desc, eq, gte, sql } from 'drizzle-orm';
 import type { Db } from '../db';
 import { BOGOTA_OFFSET_MS, monthKey, monthStart } from '../month';
 import { categories, transactions, wallets } from '../schema';
+import { inCop } from './trm';
 
 /** Desde dónde sigue la página: el último movimiento que ya se mostró. */
 export type TransactionsPage = { before: Date; beforeId: string };
 
-const total = () => sql<bigint>`coalesce(sum(${transactions.amountMinor}), 0)`.mapWith(BigInt);
+/** Suma en pesos: los movimientos en USD pasan con la TRM (ver `inCop`). */
+const total = () =>
+  sql<bigint>`coalesce(sum(${inCop(transactions.amountMinor, transactions.currency)}), 0)`.mapWith(
+    BigInt,
+  );
 
 export function transactionsService(db: Db) {
   /**

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { trm } from '../schema';
 import { testDb } from '../test-db';
 import { categoriesService } from './categories';
 import { transactionsService } from './transactions';
@@ -60,6 +61,26 @@ describe('transactionsService', () => {
       expenseMinor: 300n,
       byCategory: [{ id: expect.any(String), name: 'Comida', amountMinor: 300n }],
     });
+  });
+
+  it('suma los movimientos en USD en pesos con la última TRM', () => {
+    const { db, moves, add } = setup();
+    const now = new Date('2026-11-15T12:00:00Z');
+    const usd = walletsService(db).create({ name: 'Dólares', type: 'bank', currency: 'USD' }).id;
+    const at = '2026-11-10T12:00:00Z';
+    moves.create({
+      walletId: usd,
+      categoryId: null,
+      kind: 'income',
+      amountMinor: '1000',
+      occurredAt: at,
+    });
+    add('500', at, 'income');
+    expect(moves.monthSummary(now).incomeMinor).toBe(500n); // sin TRM, el USD cuenta 0
+    db.insert(trm).values({ date: '2026-11-14', rateMinor: 400000n }).run();
+    db.insert(trm).values({ date: '2026-11-15', rateMinor: 412345n }).run();
+    // US$10 × 4.123,45 = 41.234,5 → 41.235
+    expect(moves.monthSummary(now).incomeMinor).toBe(41735n);
   });
 
   it('da 6 meses, del más viejo al actual, con 0 en los vacíos', () => {

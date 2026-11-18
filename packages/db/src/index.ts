@@ -1,3 +1,10 @@
-export * from './client';
-export * from './defaults';
+export { type Db, drizzleConfig } from './db';
+export { migrate } from './migrations';
 export * from './schema';
+export { budgetsService } from './services/budgets';
+export { categoriesService } from './services/categories';
+export { goalsService } from './services/goals';
+export type { InvestmentStats } from './services/investment-stats';
+export { investmentsService } from './services/investments';
+export { type TransactionsPage, transactionsService } from './services/transactions';
+export { walletsService } from './services/wallets';

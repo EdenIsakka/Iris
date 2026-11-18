@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { investmentStats, periodStart } from '../src/features/investments/stats';
+import { investmentStats, periodStart } from './investment-stats';
 
 const day = (d: string) => new Date(`${d}T12:00:00Z`);
 

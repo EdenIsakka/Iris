@@ -1,6 +1,7 @@
 import { formatMoney } from '@finanzas/shared';
 import { matchFont } from '@shopify/react-native-skia';
-import { Platform, useColorScheme, View } from 'react-native';
+import { useRef, useState } from 'react';
+import { Platform, Pressable, useColorScheme, View } from 'react-native';
 import { BarGroup, CartesianChart } from 'victory-native';
 import { Card } from '@/components/ui/card';
 import { Text } from '@/components/ui/text';
@@ -22,6 +23,10 @@ export function MonthlyChart() {
   const { data, isLoading, error } = useMonthlyTotals();
   // La gráfica se dibuja con Skia, que no lee className: toma los colores del tema directo.
   const c = palette[useColorScheme() === 'dark' ? 'dark' : 'light'];
+  // Mes elegido al tocar la gráfica; sin tocar, el último (el actual).
+  const [picked, setPicked] = useState<number | null>(null);
+  // Posición x de cada mes, guardada al dibujar, para saber qué barra se tocó.
+  const xs = useRef<number[]>([]);
   if (isLoading) return <Text className="text-secondary">Cargando…</Text>;
   if (error) return <Text>{error.message}</Text>;
   const months = data ?? [];
@@ -38,6 +43,7 @@ export function MonthlyChart() {
         `${monthName(m.month)}: ingresos ${formatMoney(m.incomeMinor)}, gastos ${formatMoney(m.expenseMinor)}`,
     )
     .join('. ');
+  const shown = months[picked ?? months.length - 1];
 
   return (
     <Card title="Ingresos vs gastos · 6 meses">
@@ -46,7 +52,15 @@ export function MonthlyChart() {
         <Legend color={c.negative} label="Gastos" />
       </View>
       {/* El lector de pantalla no ve las barras: lee los montos de cada mes. */}
-      <View className="h-[200px]" accessible accessibilityLabel={summary}>
+      <Pressable
+        className="h-[200px]"
+        accessibilityLabel={summary}
+        onPress={(e) => {
+          const x = e.nativeEvent.locationX;
+          const dist = xs.current.map((px) => Math.abs(px - x));
+          setPicked(dist.indexOf(Math.min(...dist)));
+        }}
+      >
         <CartesianChart
           data={points}
           xKey="month"
@@ -63,19 +77,31 @@ export function MonthlyChart() {
             },
           ]}
         >
-          {({ points: p, chartBounds }) => (
-            <BarGroup
-              chartBounds={chartBounds}
-              betweenGroupPadding={0.35}
-              withinGroupPadding={0.1}
-              roundedCorners={{ topLeft: 4, topRight: 4 }}
-            >
-              <BarGroup.Bar points={p.income} color={c.positive} />
-              <BarGroup.Bar points={p.expense} color={c.negative} />
-            </BarGroup>
-          )}
+          {({ points: p, chartBounds }) => {
+            xs.current = p.income.map((pt) => pt.x);
+            return (
+              <BarGroup
+                chartBounds={chartBounds}
+                betweenGroupPadding={0.35}
+                withinGroupPadding={0.1}
+                roundedCorners={{ topLeft: 4, topRight: 4 }}
+              >
+                <BarGroup.Bar points={p.income} color={c.positive} />
+                <BarGroup.Bar points={p.expense} color={c.negative} />
+              </BarGroup>
+            );
+          }}
         </CartesianChart>
-      </View>
+      </Pressable>
+      {shown ? (
+        <Text className="pt-2 text-[15px]">
+          <Text className="text-[15px] font-semibold capitalize">{monthName(shown.month)}</Text>
+          {' · '}
+          <Text className="text-[15px] text-positive">{formatMoney(shown.incomeMinor)}</Text>
+          {' · '}
+          <Text className="text-[15px] text-negative">{formatMoney(shown.expenseMinor)}</Text>
+        </Text>
+      ) : null}
     </Card>
   );
 }

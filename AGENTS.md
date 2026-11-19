@@ -18,7 +18,3 @@ Gestor de finanzas personales mobile-first. Los datos viven en el celular, sin s
 4. Una migración nueva se agrega al final de `packages/db/src/migrations.ts` (nunca se edita una que ya salió) y debe coincidir con `schema.ts`.
 5. Antes de terminar: `pnpm lint && pnpm typecheck && pnpm test`. Las pruebas usan SQLite en memoria (`sql.js`); no necesitan nada levantado.
 6. Commits con Conventional Commits; una decisión de arquitectura nueva = un ADR nuevo en `docs/adr`.
-
-## Pendiente
-
-- Tocar una barra de la gráfica mensual para ver los montos exactos.

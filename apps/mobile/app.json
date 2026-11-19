@@ -3,7 +3,7 @@
     "name": "Iris",
     "slug": "iris",
     "scheme": "iris",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "ios": {
@@ -11,14 +11,11 @@
     },
     "android": {
       "package": "com.julianisaza.iris",
+      "versionCode": 2,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0B1026"
       }
-    },
-    "web": {
-      "bundler": "metro",
-      "output": "static"
     },
     "plugins": [
       "expo-router",

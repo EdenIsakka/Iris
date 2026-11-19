@@ -2,10 +2,15 @@ import { formatMoney } from '@finanzas/shared';
 import { View } from 'react-native';
 import { Card, Row } from '@/components/ui/card';
 import { Text } from '@/components/ui/text';
+import { useTrm, useWallets } from '@/features/wallets/api';
 import { useMonthSummary } from '../api';
 
 export function MonthSummary() {
   const { data, isLoading, error } = useMonthSummary();
+  const wallets = useWallets();
+  const trm = useTrm();
+  // Sin TRM los movimientos en dólares suman 0: se avisa en vez de mostrar un total incompleto.
+  const noTrm = trm.isSuccess && !trm.data && wallets.data?.some((w) => w.currency === 'USD');
 
   if (isLoading) return <Text className="text-secondary">Cargando…</Text>;
   if (error) return <Text>{error.message}</Text>;
@@ -26,6 +31,11 @@ export function MonthSummary() {
         <View className="border-t border-separator pt-1">
           <Row label="Balance" value={formatMoney(balance)} strong />
         </View>
+        {noTrm ? (
+          <Text className="pt-1 text-[13px] text-secondary">
+            Los movimientos en dólares no se suman hasta tener la TRM: abre la app con internet.
+          </Text>
+        ) : null}
       </Card>
       <Card title="Gastos por categoría">
         {data.byCategory.length ? (

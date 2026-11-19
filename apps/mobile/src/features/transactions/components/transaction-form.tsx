@@ -69,7 +69,6 @@ export function TransactionForm({ onSaved, transaction, footer }: Props) {
       categoryId: kindCategories.some((c) => c.id === categoryId) ? categoryId : null,
       kind,
       amountMinor: amount,
-      currency: 'COP',
       occurredAt: date.toISOString(),
       note: note.trim() || undefined,
     });

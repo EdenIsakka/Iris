@@ -4,7 +4,7 @@ Gestor de finanzas personales pensado para el celular: registra ingresos y gasto
 
 Todo se guarda en tu celular: no hay servidor ni cuenta que crear.
 
-**[Descargar la APK para Android](https://github.com/EdenIsakka/finanzas-app/releases/latest)** (en _Assets_ del último release; solo Android).
+**[Descargar la APK para Android](https://github.com/EdenIsakka/Iris/releases/latest)** (en _Assets_ del último release; solo Android).
 
 ## Capturas
 

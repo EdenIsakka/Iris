@@ -56,6 +56,10 @@ describe('backupService', () => {
     expect(() => backup.importData({ ...good, version: 999 })).toThrow('más nueva');
     const injected = { ...good, tables: { wallets: [{ 'id) values (1); drop table x; --': 1 }] } };
     expect(() => backup.importData(injected)).toThrow('no es una copia');
+    // La app lee los montos con BigInt: un decimal la rompería después de cargar.
+    const wallets = good.tables.wallets?.map((w) => ({ ...w, opening_balance_minor: 1.5 }));
+    const decimal = { ...good, tables: { ...good.tables, wallets } };
+    expect(() => backup.importData(decimal)).toThrow('no es una copia');
     // Una transacción apunta a una billetera que no está: falla a mitad y se deshace.
     const broken = { ...good, tables: { ...good.tables, wallets: [] } };
     expect(() => backup.importData(broken)).toThrow('no es una copia');

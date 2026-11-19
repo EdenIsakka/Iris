@@ -28,8 +28,13 @@ export type Backup = {
 const NOT_A_BACKUP = 'Este archivo no es una copia de Iris, o está dañado.';
 
 export function backupService(db: Db) {
+  /** Nombre → tipo ('integer', 'text') de cada columna de la tabla. */
   const columnsOf = (table: string) =>
-    new Set(db.all<{ name: string }>(sql.raw(`pragma table_info(${table})`)).map((c) => c.name));
+    new Map(
+      db
+        .all<{ name: string; type: string }>(sql.raw(`pragma table_info(${table})`))
+        .map((c) => [c.name, c.type.toLowerCase()]),
+    );
 
   return {
     /** Todos los datos en un objeto listo para JSON.stringify. */
@@ -70,8 +75,12 @@ export function backupService(db: Db) {
         for (const row of rows) {
           if (!row || typeof row !== 'object') throw new Error(NOT_A_BACKUP);
           for (const [key, value] of Object.entries(row)) {
-            const ok = value === null || typeof value === 'string' || typeof value === 'number';
-            if (!columns.has(key) || !ok) throw new Error(NOT_A_BACKUP);
+            const type = columns.get(key);
+            // Montos y fechas enteros: la app los lee con BigInt, que no acepta decimales.
+            const ok =
+              value === null ||
+              (type === 'integer' ? Number.isSafeInteger(value) : typeof value === 'string');
+            if (!type || !ok) throw new Error(NOT_A_BACKUP);
           }
         }
         return { table, rows: rows as Row[] };

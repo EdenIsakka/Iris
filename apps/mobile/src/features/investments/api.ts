@@ -89,8 +89,9 @@ function useInvestmentMutation<T>(fn: (input: T) => unknown) {
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: investmentKeys.all });
-      // Con precio automático, el valor de hoy sale de las unidades nuevas.
-      await queryClient.invalidateQueries({ queryKey: ['prices'] });
+      // Con precio automático, el valor de hoy sale de las unidades nuevas. Sin esperar la red:
+      // lo guardado ya está.
+      void queryClient.invalidateQueries({ queryKey: ['prices'] });
     },
   });
 }

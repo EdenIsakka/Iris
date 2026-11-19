@@ -9,7 +9,6 @@
         "expo-*",
         "react-native",
         "react",
-        "react-dom",
         "@shopify/react-native-skia",
         "react-native-reanimated",
         "react-native-gesture-handler",

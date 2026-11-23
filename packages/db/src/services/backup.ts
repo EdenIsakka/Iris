@@ -14,6 +14,7 @@ const TABLES = [
   'investment_contributions',
   'investment_valuations',
   'trm',
+  'scheduled_payments',
 ] as const;
 
 /** Filas tal como las guarda SQLite: montos enteros y fechas en milisegundos. */

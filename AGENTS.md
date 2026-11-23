@@ -7,7 +7,7 @@ Contexto para agentes de IA (Claude, Orca, etc.) que trabajen en este repo.
 Gestor de finanzas personales mobile-first. Los datos viven en el celular, sin servidor ni cuentas (`docs/adr/0008`). Monorepo pnpm + Turborepo.
 
 - `apps/mobile`: Expo SDK 58 + Expo Router + TanStack Query + `expo-sqlite`.
-- `packages/db`: esquema Drizzle de SQLite, migraciones y servicios (billeteras, movimientos, topes, metas, inversiones).
+- `packages/db`: esquema Drizzle de SQLite, migraciones y servicios (billeteras, movimientos, topes, metas, inversiones, pagos programados).
 - `packages/shared`: esquemas Zod y utilidades de dinero.
 
 ## Reglas

@@ -14,7 +14,7 @@ import { AmountInput } from '@/components/ui/amount-input';
 import { Chip } from '@/components/ui/chip';
 import { Button, FieldLabel, Form, FormError, inputClassName } from '@/components/ui/form';
 import { Text, TextInput } from '@/components/ui/text';
-import { formatDate } from '@/lib/format-date';
+import { formatDate, isoDate } from '@/lib/format-date';
 import { type Investment, useCreateInvestment, useUpdateInvestment } from '../api';
 import { KIND_LABELS } from '../format';
 
@@ -36,9 +36,6 @@ const parseRate = (text: string) =>
       : Number.NaN;
 
 const isToday = (d: Date) => d.toDateString() === new Date().toDateString();
-// Fecha local en AAAA-MM-DD (toISOString la pasaría a UTC y podría cambiar el día).
-const isoDate = (d: Date) =>
-  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
 export function InvestmentForm({ onSaved, investment, footer }: Props) {
   const create = useCreateInvestment();

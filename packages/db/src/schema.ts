@@ -1,4 +1,4 @@
-import { CURRENCIES, PRICE_SYMBOLS } from '@finanzas/shared';
+import { CURRENCIES, PAYMENT_REPEATS, PRICE_SYMBOLS } from '@finanzas/shared';
 import { sql } from 'drizzle-orm';
 import { customType, index, integer, sqliteTable, text, unique } from 'drizzle-orm/sqlite-core';
 
@@ -143,6 +143,23 @@ export const investmentValuations = sqliteTable(
   },
   (t) => [index('investment_valuations_idx').on(t.investmentId, t.occurredAt)],
 );
+
+/** Pagos por hacer: el aviso sale un día antes; al pagarlo se vuelve un gasto. */
+export const scheduledPayments = sqliteTable('scheduled_payments', {
+  id: id(),
+  name: text().notNull(),
+  amountMinor: money().notNull(),
+  walletId: text()
+    .notNull()
+    .references(() => wallets.id, { onDelete: 'cascade' }),
+  categoryId: text().references(() => categories.id, { onDelete: 'set null' }),
+  /** Próxima fecha, 'YYYY-MM-DD'. */
+  dueDate: text().notNull(),
+  /** Día elegido al crearlo: un pago del 31 vuelve al 31 después de febrero. */
+  dayOfMonth: integer().notNull(),
+  repeat: text({ enum: PAYMENT_REPEATS }).notNull(),
+  createdAt: createdAt(),
+});
 
 /** TRM de cada día publicado (date = 'YYYY-MM-DD'), en centavos de peso por dólar. */
 export const trm = sqliteTable('trm', {

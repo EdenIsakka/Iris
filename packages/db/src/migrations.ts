@@ -90,6 +90,19 @@ const MIGRATIONS: string[][] = [
     'alter table investment_contributions add column quantity_e8 integer',
     'alter table investment_valuations add column auto integer not null default 0',
   ],
+  [
+    `create table scheduled_payments (
+      id ${id},
+      name text not null,
+      amount_minor ${money},
+      wallet_id text not null references wallets(id) on delete cascade,
+      category_id text references categories(id) on delete set null,
+      due_date text not null,
+      day_of_month integer not null,
+      repeat text not null,
+      created_at integer not null
+    )`,
+  ],
 ];
 
 /** Versión de la base; va en las copias para no importar una de una app más nueva. */

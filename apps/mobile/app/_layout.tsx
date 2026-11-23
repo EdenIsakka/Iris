@@ -3,11 +3,13 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { Stack, ThemeProvider } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useColorScheme, View } from 'react-native';
+import { watchPayments } from '@/features/payments/api';
 import { loadColorScheme } from '@/lib/color-scheme';
 import { queryClient } from '@/lib/query-client';
 import { navigationTheme, themeVars } from '@/lib/theme';
 
 loadColorScheme();
+watchPayments(queryClient);
 
 const modal = (title: string) => ({ presentation: 'modal' as const, headerShown: true, title });
 
@@ -36,6 +38,9 @@ export default function RootLayout() {
             <Stack.Screen name="investments/[id]/index" options={modal('Inversión')} />
             <Stack.Screen name="investments/[id]/edit" options={modal('Editar inversión')} />
             <Stack.Screen name="price-key" options={modal('Precios automáticos')} />
+            <Stack.Screen name="payments" options={modal('Pagos por hacer')} />
+            <Stack.Screen name="payments/new" options={modal('Nuevo pago')} />
+            <Stack.Screen name="payments/[id]" options={modal('Pago')} />
             <Stack.Screen name="backup" options={modal('Copia de seguridad')} />
           </Stack>
         </QueryClientProvider>

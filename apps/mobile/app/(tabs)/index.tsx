@@ -8,6 +8,7 @@ import { PaymentsSummary } from '@/features/payments/components/payments-summary
 import { MonthSummary } from '@/features/transactions/components/month-summary';
 import { MonthlyChart } from '@/features/transactions/components/monthly-chart';
 import { WalletsSummary } from '@/features/wallets/components/wallets-summary';
+import { bankNotifications } from '../../modules/bank-notifications';
 
 export default function DashboardScreen() {
   return (
@@ -19,6 +20,16 @@ export default function DashboardScreen() {
         <MonthlyChart />
         <BudgetsSummary />
         <InvestmentsSummary />
+        {bankNotifications ? (
+          <Link href="/bank" asChild>
+            <Pressable
+              className="min-h-[44px] items-center justify-center"
+              accessibilityRole="button"
+            >
+              <Text className="text-[15px] text-accent">Notificaciones del banco (prueba)</Text>
+            </Pressable>
+          </Link>
+        ) : null}
         <Link href="/backup" asChild>
           <Pressable
             className="min-h-[44px] items-center justify-center"

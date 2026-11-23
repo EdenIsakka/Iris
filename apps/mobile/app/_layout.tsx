@@ -41,6 +41,7 @@ export default function RootLayout() {
             <Stack.Screen name="payments" options={modal('Pagos por hacer')} />
             <Stack.Screen name="payments/new" options={modal('Nuevo pago')} />
             <Stack.Screen name="payments/[id]" options={modal('Pago')} />
+            <Stack.Screen name="bank" options={modal('Notificaciones del banco')} />
             <Stack.Screen name="backup" options={modal('Copia de seguridad')} />
           </Stack>
         </QueryClientProvider>

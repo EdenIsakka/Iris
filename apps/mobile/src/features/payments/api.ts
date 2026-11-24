@@ -2,7 +2,7 @@ import { paymentsService } from '@finanzas/db';
 import type { SavePaymentInput } from '@finanzas/shared';
 import { type QueryClient, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { db } from '@/lib/db';
-import { askReminderPermission, scheduleReminders } from './reminders';
+import { askReminderPermission, canRemind, scheduleReminders } from './reminders';
 
 const payments = paymentsService(db);
 
@@ -10,6 +10,11 @@ export const paymentKeys = { all: ['payments'] as const };
 
 export function usePayments() {
   return useQuery({ queryKey: paymentKeys.all, queryFn: () => payments.list() });
+}
+
+/** Si niega el permiso, la lista lo dice en vez de prometer avisos. */
+export function useCanRemind() {
+  return useQuery({ queryKey: ['reminder-permission'], queryFn: canRemind, staleTime: 0 });
 }
 
 export type Payment = ReturnType<typeof payments.list>[number];

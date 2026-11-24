@@ -82,10 +82,19 @@ export function paymentsService(db: Db) {
       return row ? db.insert(scheduledPayments).values(row).returning().get() : null;
     },
 
-    /** null si no existe o las referencias no valen. */
+    /**
+     * null si no existe o las referencias no valen. Si la fecha no cambió, se queda el día
+     * original: uno del 31 que va en el 28 de febrero vuelve al 31 en marzo.
+     */
     update(id: string, input: SavePaymentInput) {
       const row = toRow(input);
       if (!row) return null;
+      const before = db
+        .select({ dueDate: scheduledPayments.dueDate, dayOfMonth: scheduledPayments.dayOfMonth })
+        .from(scheduledPayments)
+        .where(eq(scheduledPayments.id, id))
+        .get();
+      if (before?.dueDate === row.dueDate) row.dayOfMonth = before.dayOfMonth;
       return (
         db
           .update(scheduledPayments)

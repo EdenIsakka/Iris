@@ -56,6 +56,20 @@ describe('paymentsService', () => {
     expect(payments.list()[0]?.dueDate).toBe('2026-03-31');
   });
 
+  it('editar sin cambiar la fecha conserva el día original', () => {
+    const { payments, base } = setup();
+    const p = payments.create({ ...base, name: 'Arriendo', dueDate: '2026-01-31' });
+    payments.pay(p?.id ?? '');
+    payments.update(p?.id ?? '', {
+      ...base,
+      name: 'Arriendo',
+      dueDate: '2026-02-28',
+      amountMinor: '450000',
+    });
+    payments.pay(p?.id ?? '');
+    expect(payments.list()[0]?.dueDate).toBe('2026-03-31');
+  });
+
   it('pagar uno de una sola vez lo quita de la lista', () => {
     const { payments, base } = setup();
     const p = payments.create({

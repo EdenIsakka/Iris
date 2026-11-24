@@ -23,6 +23,7 @@ import {
   useCreateTransaction,
   useUpdateTransaction,
 } from '../api';
+import { CategoryIcon } from './category-icon';
 
 type Kind = 'expense' | 'income';
 
@@ -173,6 +174,7 @@ export function TransactionForm({ onSaved, transaction, footer, kind: initialKin
           <Chip
             key={c.id}
             label={c.name}
+            icon={<CategoryIcon name={c.name} income={kind === 'income'} small />}
             selected={c.id === categoryId}
             onPress={() => setCategoryId(c.id === categoryId ? null : c.id)}
           />

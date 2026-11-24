@@ -1,11 +1,22 @@
-import { formatMoney, type InvestmentPeriod } from '@finanzas/shared';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { formatMoney, type InvestmentKind, type InvestmentPeriod } from '@finanzas/shared';
 import { Link } from 'expo-router';
+import type { ComponentProps } from 'react';
 import { FlatList, Pressable, View } from 'react-native';
-import { Card } from '@/components/ui/card';
+import { Hero, HeroTile, tabular } from '@/components/ui/hero';
 import { Text } from '@/components/ui/text';
 import { type Investment, useInvestments } from '../api';
-import { changeClass, formatChange, KIND_LABELS } from '../format';
-import { StatsBlock } from './investment-totals';
+import { changeClass, formatChange, KIND_LABELS, PERIOD_CHANGE_LABELS } from '../format';
+
+const KIND_STYLES: Record<InvestmentKind, [ComponentProps<typeof Ionicons>['name'], string]> = {
+  crypto: ['logo-bitcoin', '#BA7517'],
+  stocks: ['trending-up', '#378ADD'],
+  fund: ['pie-chart', '#1D9E75'],
+  cdt: ['lock-closed', '#534AB7'],
+  other: ['briefcase', '#888780'],
+};
+
+const arrow = (gain: bigint) => (gain < 0n ? 'arrow-down' : 'arrow-up');
 
 export function InvestmentList({ period }: { period: InvestmentPeriod }) {
   const { data, isLoading, error } = useInvestments(period);
@@ -13,23 +24,35 @@ export function InvestmentList({ period }: { period: InvestmentPeriod }) {
   if (isLoading) return <Text className="text-secondary">Cargando…</Text>;
   if (error) return <Text>{error.message}</Text>;
   const items = data?.items ?? [];
+  const totals = data?.totals;
 
   return (
     <FlatList
       className="-mx-4"
-      contentContainerClassName="px-4 pb-6 pt-2"
+      contentContainerClassName="px-4 pb-24 pt-2"
       data={items}
       keyExtractor={(i) => i.id}
       ListHeaderComponent={
-        data && items.length ? (
-          <View className="gap-5 pb-2">
-            <Card title="Total">
-              <StatsBlock stats={data.totals} period={period} />
-            </Card>
-            <Text
-              className="px-4 text-[13px] font-medium uppercase tracking-wide text-secondary"
-              accessibilityRole="header"
-            >
+        totals && items.length ? (
+          <View className="gap-2 pb-2">
+            <Hero label="Vale hoy" value={formatMoney(totals.valueMinor)}>
+              <Text className="-mt-3 text-[13px] text-on-hero-muted" style={tabular}>
+                Invertiste {formatMoney(totals.investedMinor)}
+              </Text>
+              <View className="flex-row gap-2">
+                <HeroTile
+                  icon={arrow(totals.gainMinor)}
+                  label="Ganancia total"
+                  value={formatChange(totals.gainMinor, totals.investedMinor)}
+                />
+                <HeroTile
+                  icon={arrow(totals.periodGainMinor)}
+                  label={PERIOD_CHANGE_LABELS[period]}
+                  value={formatChange(totals.periodGainMinor, totals.periodBaseMinor)}
+                />
+              </View>
+            </Hero>
+            <Text className="px-1 pt-4 text-[20px] font-semibold" accessibilityRole="header">
               Mis inversiones
             </Text>
           </View>
@@ -55,24 +78,33 @@ export function InvestmentList({ period }: { period: InvestmentPeriod }) {
 type RowProps = { item: Investment; period: InvestmentPeriod; first: boolean; last: boolean };
 
 function InvestmentRow({ item, period, first, last }: RowProps) {
+  const [icon, color] = KIND_STYLES[item.kind];
   return (
     <Link href={{ pathname: '/investments/[id]', params: { id: item.id, period } }} asChild>
       <Pressable
-        className={`min-h-[56px] flex-row items-center justify-between bg-card px-4 py-2 active:opacity-60 ${
-          first ? 'rounded-t-2xl' : 'border-t border-separator'
-        } ${last ? 'rounded-b-2xl' : ''}`}
+        className={`min-h-[60px] flex-row items-center gap-3 bg-card px-4 py-2 active:opacity-60 ${
+          first ? 'rounded-t-3xl' : 'border-t border-separator'
+        } ${last ? 'rounded-b-3xl' : ''}`}
         accessibilityRole="button"
         accessibilityHint="Abre el detalle para actualizar el valor o aportar"
       >
-        <View className="flex-1 pr-3">
+        <View
+          className="h-9 w-9 items-center justify-center rounded-full"
+          style={{ backgroundColor: color }}
+        >
+          <Ionicons name={icon} size={18} color="#FFFFFF" />
+        </View>
+        <View className="flex-1">
           <Text className="text-[17px]" numberOfLines={1}>
             {item.name}
           </Text>
           <Text className="text-[13px] text-secondary">{KIND_LABELS[item.kind]}</Text>
         </View>
         <View className="items-end">
-          <Text className="text-[17px] font-medium">{formatMoney(item.valueMinor)}</Text>
-          <Text className={`text-[13px] ${changeClass(item.periodGainMinor)}`}>
+          <Text className="text-[17px] font-medium" style={tabular}>
+            {formatMoney(item.valueMinor)}
+          </Text>
+          <Text className={`text-[13px] ${changeClass(item.periodGainMinor)}`} style={tabular}>
             {formatChange(item.periodGainMinor, item.periodBaseMinor)}
           </Text>
         </View>

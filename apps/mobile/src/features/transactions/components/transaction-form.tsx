@@ -31,9 +31,11 @@ type Props = {
   /** Si viene, el formulario edita este movimiento en vez de crear uno nuevo. */
   transaction?: Transaction;
   footer?: ReactNode;
+  /** Tipo con el que arranca un movimiento nuevo. */
+  kind?: Kind;
 };
 
-export function TransactionForm({ onSaved, transaction, footer }: Props) {
+export function TransactionForm({ onSaved, transaction, footer, kind: initialKind }: Props) {
   const wallets = useWallets();
   const categories = useCategories();
   const createTx = useCreateTransaction();
@@ -41,7 +43,7 @@ export function TransactionForm({ onSaved, transaction, footer }: Props) {
   const create = transaction ? updateTx : createTx;
   const createCategory = useCreateCategory();
 
-  const [kind, setKind] = useState<Kind>(transaction?.kind ?? 'expense');
+  const [kind, setKind] = useState<Kind>(transaction?.kind ?? initialKind ?? 'expense');
   const [amount, setAmount] = useState(transaction?.amountMinor.toString() ?? '');
   const [walletId, setWalletId] = useState<string | null>(transaction?.walletId ?? null);
   const [categoryId, setCategoryId] = useState<string | null>(transaction?.categoryId ?? null);

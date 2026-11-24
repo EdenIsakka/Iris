@@ -4,19 +4,16 @@ import { Text } from './text';
 
 type Props = { title?: string; children: ReactNode };
 
-/** Bloque agrupado al estilo de Ajustes de iOS: título pequeño afuera y tarjeta redondeada. */
+/** Sección con título afuera y tarjeta redondeada. */
 export function Card({ title, children }: Props) {
   return (
     <View className="gap-2">
       {title ? (
-        <Text
-          className="px-4 text-[13px] font-medium uppercase tracking-wide text-secondary"
-          accessibilityRole="header"
-        >
+        <Text className="px-1 text-[20px] font-semibold tracking-tight" accessibilityRole="header">
           {title}
         </Text>
       ) : null}
-      <View className="gap-1 rounded-2xl bg-card px-4 py-3">{children}</View>
+      <View className="gap-1 rounded-3xl bg-card px-4 py-3">{children}</View>
     </View>
   );
 }

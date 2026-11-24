@@ -2,7 +2,8 @@ import { DarkTheme, DefaultTheme, type Theme } from 'expo-router';
 import { vars } from 'nativewind';
 
 /**
- * Colores de la app, claro y oscuro, al estilo de iOS. Única fuente: las clases de Tailwind
+ * Colores de la app, claro y oscuro. El violeta es la marca (Iris es una flor); verde y rojo
+ * quedan para ingresos y gastos. Única fuente: las clases de Tailwind
  * (bg-card, text-secondary…) leen estas variables y lo que no usa className (gráfica,
  * navegación) lee el objeto. Los tonos de verde, rojo y naranja son las versiones
  * accesibles de Apple: pasan contraste AA sobre su fondo.
@@ -15,8 +16,12 @@ export const palette = {
     secondary: '#6C6C70',
     separator: '#E5E5EA',
     fill: '#E9E9EE',
-    accent: '#248A3D',
+    accent: '#534AB7',
     'on-accent': '#FFFFFF',
+    hero: '#3C3489',
+    'hero-tile': '#534AB7',
+    'on-hero': '#EEEDFE',
+    'on-hero-muted': '#CECBF6',
     positive: '#248A3D',
     negative: '#D70015',
     warning: '#C93400',
@@ -28,8 +33,12 @@ export const palette = {
     secondary: '#98989F',
     separator: '#38383A',
     fill: '#2C2C2E',
-    accent: '#30D158',
-    'on-accent': '#000000',
+    accent: '#AFA9EC',
+    'on-accent': '#26215C',
+    hero: '#3C3489',
+    'hero-tile': '#534AB7',
+    'on-hero': '#EEEDFE',
+    'on-hero-muted': '#CECBF6',
     positive: '#30D158',
     negative: '#FF453A',
     warning: '#FF9F0A',

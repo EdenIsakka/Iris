@@ -1,5 +1,6 @@
 import { Link } from 'expo-router';
 import { Pressable, ScrollView } from 'react-native';
+import { QuickActions } from '@/components/quick-actions';
 import { Screen } from '@/components/ui/screen';
 import { Text } from '@/components/ui/text';
 import { BudgetsSummary } from '@/features/budgets/components/budgets-summary';
@@ -14,6 +15,7 @@ export default function DashboardScreen() {
     <Screen title="Resumen">
       <ScrollView className="-mx-4" contentContainerClassName="gap-6 px-4 pb-4">
         <WalletsSummary />
+        <QuickActions />
         <PaymentsSummary />
         <MonthSummary />
         <MonthlyChart />

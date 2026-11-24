@@ -27,19 +27,21 @@ const STYLES: Record<string, [IconName, string]> = {
  * shortcut: va por el nombre de las categorías que trae la app; las nuevas o renombradas
  * usan el genérico. Si se quiere elegir ícono, guardar ícono y color en `categories`.
  */
-export function CategoryIcon({ name, income }: { name?: string | null; income?: boolean }) {
+type Props = { name?: string | null; income?: boolean; small?: boolean };
+
+export function CategoryIcon({ name, income, small }: Props) {
   const [icon, color] = (name && STYLES[name]) || [
     income ? 'arrow-down' : 'pricetag',
     income ? '#0F6E56' : '#888780',
   ];
   return (
     <View
-      className="h-9 w-9 items-center justify-center rounded-full"
+      className={`items-center justify-center rounded-full ${small ? 'h-8 w-8' : 'h-9 w-9'}`}
       style={{ backgroundColor: color }}
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
     >
-      <Ionicons name={icon} size={18} color="#FFFFFF" />
+      <Ionicons name={icon} size={small ? 15 : 18} color="#FFFFFF" />
     </View>
   );
 }

@@ -19,7 +19,7 @@ export function AmountInput({ label, value, onChangeValue, autoFocus, currency =
     <>
       <FieldLabel>{label}</FieldLabel>
       <TextInput
-        className={`${inputClassName} text-[20px] font-semibold`}
+        className={`${inputClassName} py-5 text-center text-[40px] font-bold`}
         value={value}
         onChangeText={(t) => onChangeValue(t.replace(/\D/g, '').replace(/^0+/, ''))}
         keyboardType="number-pad"
@@ -29,7 +29,7 @@ export function AmountInput({ label, value, onChangeValue, autoFocus, currency =
         autoFocus={autoFocus}
       />
       {value ? (
-        <Text className="text-secondary">{formatMoney(BigInt(value), currency)}</Text>
+        <Text className="text-center text-secondary">{formatMoney(BigInt(value), currency)}</Text>
       ) : null}
     </>
   );

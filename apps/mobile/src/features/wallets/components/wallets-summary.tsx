@@ -1,8 +1,8 @@
-import Ionicons from '@expo/vector-icons/Ionicons';
 import { copToUsd, formatMoney, usdToCop } from '@finanzas/shared';
 import { Link } from 'expo-router';
 import { Pressable, View } from 'react-native';
 import { Card, CardAction } from '@/components/ui/card';
+import { Hero, HeroTile } from '@/components/ui/hero';
 import { Text } from '@/components/ui/text';
 import { useMonthSummary } from '@/features/transactions/api';
 import { formatDate } from '@/lib/format-date';
@@ -27,26 +27,28 @@ export function WalletsSummary() {
 
   return (
     <>
-      <View className="gap-3 rounded-3xl bg-hero p-5">
-        <View>
-          <Text className="text-[13px] text-on-hero-muted">Saldo total</Text>
-          <Text className="text-[34px] font-bold tracking-tight text-on-hero" style={tabular}>
-            {formatMoney(trm ? cop + usdToCop(usd, trm.rateMinor) : cop)}
+      <Hero label="Saldo total" value={formatMoney(trm ? cop + usdToCop(usd, trm.rateMinor) : cop)}>
+        {/* Sin TRM no hay cómo sumarlos: los dólares van aparte. */}
+        {hasUsd && !trm ? (
+          <Text className="-mt-3 text-[15px] font-semibold text-on-hero">
+            + {formatMoney(usd, 'USD')}
           </Text>
-          {/* Sin TRM no hay cómo sumarlos: los dólares van aparte. */}
-          {hasUsd && !trm ? (
-            <Text className="text-[15px] font-semibold text-on-hero">
-              + {formatMoney(usd, 'USD')}
-            </Text>
-          ) : null}
-        </View>
+        ) : null}
         {month.data ? (
           <View className="flex-row gap-2">
-            <Tile icon="arrow-down" label="Entró este mes" value={month.data.incomeMinor} />
-            <Tile icon="arrow-up" label="Salió este mes" value={month.data.expenseMinor} />
+            <HeroTile
+              icon="arrow-down"
+              label="Entró este mes"
+              value={formatMoney(month.data.incomeMinor)}
+            />
+            <HeroTile
+              icon="arrow-up"
+              label="Salió este mes"
+              value={formatMoney(month.data.expenseMinor)}
+            />
           </View>
         ) : null}
-      </View>
+      </Hero>
       <Card title="Billeteras">
         {wallets.map((w) => (
           <Link key={w.id} href={{ pathname: '/wallets/[id]', params: { id: w.id } }} asChild>
@@ -88,34 +90,5 @@ export function WalletsSummary() {
         </Link>
       </Card>
     </>
-  );
-}
-
-const tabular = { fontVariant: ['tabular-nums' as const] };
-
-function Tile({
-  icon,
-  label,
-  value,
-}: {
-  icon: 'arrow-down' | 'arrow-up';
-  label: string;
-  value: bigint;
-}) {
-  return (
-    <View className="flex-1 gap-0.5 rounded-2xl bg-hero-tile px-3 py-2">
-      <View className="flex-row items-center gap-1">
-        <Ionicons name={icon} size={12} color="#CECBF6" />
-        <Text className="text-[12px] text-on-hero-muted">{label}</Text>
-      </View>
-      <Text
-        className="text-[17px] font-semibold text-on-hero"
-        style={tabular}
-        numberOfLines={1}
-        adjustsFontSizeToFit
-      >
-        {formatMoney(value)}
-      </Text>
-    </View>
   );
 }

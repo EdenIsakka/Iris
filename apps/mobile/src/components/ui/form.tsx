@@ -15,9 +15,9 @@ export function Form({ children }: { children: ReactNode }) {
   );
 }
 
-/** Caja de un campo de texto: relleno gris, sin borde, como en iOS. El tamaño de letra lo pone
+/** Caja de un campo de texto: tarjeta redondeada sobre el fondo gris, sin borde. El tamaño de letra lo pone
  * cada campo: dos tamaños en el mismo className no se sabe cuál gana. */
-export const inputClassName = 'rounded-xl bg-fill px-4 py-3';
+export const inputClassName = 'rounded-2xl bg-card px-4 py-3';
 
 export function FieldLabel({ children, nativeID }: { children: ReactNode; nativeID?: string }) {
   return (
@@ -45,13 +45,13 @@ type SegmentedProps<T extends string> = {
 /** Selector de opciones excluyentes, como el control segmentado de iOS. */
 export function Segmented<T extends string>({ options, value, onChange }: SegmentedProps<T>) {
   return (
-    <View className="flex-row rounded-xl bg-fill p-1" accessibilityRole="tablist">
+    <View className="flex-row rounded-2xl bg-fill p-1" accessibilityRole="tablist">
       {options.map((o) => {
         const selected = o.value === value;
         return (
           <Pressable
             key={o.value}
-            className={`min-h-[40px] flex-1 items-center justify-center rounded-lg ${
+            className={`min-h-[40px] flex-1 items-center justify-center rounded-xl ${
               selected ? 'bg-card' : ''
             }`}
             onPress={() => onChange(o.value)}
@@ -77,7 +77,7 @@ type ButtonProps = {
 export function Button({ label, onPress, disabled, destructive }: ButtonProps) {
   return (
     <Pressable
-      className={`min-h-[50px] items-center justify-center rounded-xl active:opacity-80 ${
+      className={`min-h-[52px] items-center justify-center rounded-2xl active:opacity-80 ${
         destructive ? 'mt-1 bg-card' : 'mt-4 bg-accent'
       } ${disabled ? 'opacity-50' : ''}`}
       onPress={onPress}

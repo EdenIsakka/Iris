@@ -14,6 +14,9 @@ Notifications.setNotificationHandler({
   }),
 });
 
+/** true si Iris puede mostrar avisos. */
+export const canRemind = async () => (await Notifications.getPermissionsAsync()).granted;
+
 /** Pide permiso para avisar (una sola vez lo pregunta Android). false si no lo dio. */
 export async function askReminderPermission() {
   // Android 13+ exige el canal antes de pedir el permiso.
@@ -54,9 +57,9 @@ export function reminderText(p: Reminder) {
  * algo cambia en la app, así el texto siempre trae el saldo de ahora.
  */
 export async function scheduleReminders(payments: Reminder[], now = new Date()) {
-  const { granted } = await Notifications.getPermissionsAsync();
-  if (!granted) return;
   await Notifications.cancelAllScheduledNotificationsAsync();
+  // Pide permiso y crea el canal también cuando los pagos llegaron por una copia restaurada.
+  if (!payments.length || !(await askReminderPermission())) return;
   for (const p of payments) {
     const date = new Date(`${p.dueDate}T09:00:00`);
     date.setDate(date.getDate() - 1);

@@ -1,7 +1,17 @@
 import * as LocalAuthentication from 'expo-local-authentication';
+import * as ScreenCapture from 'expo-screen-capture';
 import * as SecureStore from 'expo-secure-store';
 
 const KEY = 'lock';
+
+/**
+ * Con el bloqueo, Android no guarda la foto de Iris para Recientes (ni deja tomar capturas):
+ * si no, los saldos se verían ahí sin poner la huella.
+ */
+export const guardScreen = (on: boolean) =>
+  (on ? ScreenCapture.preventScreenCaptureAsync() : ScreenCapture.allowScreenCaptureAsync()).catch(
+    () => {},
+  );
 
 export const isLockOn = async () =>
   (await SecureStore.getItemAsync(KEY).catch(() => null)) === 'on';
@@ -28,5 +38,6 @@ export async function setLock(on: boolean) {
     if (!(await unlock('Confirma que eres tú'))) return false;
   }
   await SecureStore.setItemAsync(KEY, on ? 'on' : 'off');
+  await guardScreen(on);
   return on;
 }

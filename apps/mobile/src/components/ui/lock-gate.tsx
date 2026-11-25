@@ -2,7 +2,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useEffect, useRef, useState } from 'react';
 import { AppState, Image, Pressable, StyleSheet, useColorScheme, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { isLockOn, unlock } from '@/lib/lock';
+import { guardScreen, isLockOn, unlock } from '@/lib/lock';
 import { palette } from '@/lib/theme';
 import { Text } from './text';
 
@@ -27,6 +27,7 @@ export function LockGate() {
   useEffect(() => {
     isLockOn().then((on) => {
       setState(on ? 'locked' : 'open');
+      if (on) guardScreen(true);
     });
     const sub = AppState.addEventListener('change', async (next) => {
       if (next === 'background') leftAt.current = Date.now();

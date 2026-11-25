@@ -5,4 +5,5 @@ export * from './schemas/goal';
 export * from './schemas/investment';
 export * from './schemas/payment';
 export * from './schemas/transaction';
+export * from './schemas/transfer';
 export * from './schemas/wallet';

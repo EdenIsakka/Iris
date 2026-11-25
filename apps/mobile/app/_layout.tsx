@@ -33,6 +33,7 @@ export default function RootLayout() {
             />
             <Stack.Screen name="transactions/new" options={modal('Nuevo movimiento')} />
             <Stack.Screen name="transactions/[id]" options={modal('Editar movimiento')} />
+            <Stack.Screen name="transfers/[id]" options={modal('Transferencia')} />
             <Stack.Screen name="categories" options={modal('Categorías')} />
             <Stack.Screen name="categories/[id]" options={modal('Editar categoría')} />
             <Stack.Screen name="goals/new" options={modal('Nueva meta')} />

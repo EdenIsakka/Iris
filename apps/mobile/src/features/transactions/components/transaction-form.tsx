@@ -1,10 +1,10 @@
 import { createTransactionSchema } from '@finanzas/shared';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import { Link } from 'expo-router';
 import { type ReactNode, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { AmountInput } from '@/components/ui/amount-input';
 import { Chip } from '@/components/ui/chip';
+import { DateField } from '@/components/ui/date-field';
 import {
   Button,
   FieldLabel,
@@ -14,8 +14,8 @@ import {
   Segmented,
 } from '@/components/ui/form';
 import { Text, TextInput } from '@/components/ui/text';
+import { TransferForm } from '@/features/transfers/components/transfer-form';
 import { useWallets } from '@/features/wallets/api';
-import { formatDate } from '@/lib/format-date';
 import {
   categoryForNote,
   type Transaction,
@@ -45,7 +45,9 @@ export function TransactionForm({ onSaved, transaction, footer, kind: initialKin
   const create = transaction ? updateTx : createTx;
   const createCategory = useCreateCategory();
 
-  const [kind, setKind] = useState<Kind>(transaction?.kind ?? initialKind ?? 'expense');
+  const [kind, setKind] = useState<Kind | 'transfer'>(
+    transaction?.kind ?? initialKind ?? 'expense',
+  );
   const [amount, setAmount] = useState(transaction?.amountMinor.toString() ?? '');
   const [walletId, setWalletId] = useState<string | null>(transaction?.walletId ?? null);
   const [categoryId, setCategoryId] = useState<string | null>(transaction?.categoryId ?? null);
@@ -53,7 +55,6 @@ export function TransactionForm({ onSaved, transaction, footer, kind: initialKin
   const [error, setError] = useState<string | null>(null);
   const [newCategory, setNewCategory] = useState<string | null>(null);
   const [date, setDate] = useState(() => transaction?.occurredAt ?? new Date());
-  const [pickingDate, setPickingDate] = useState(false);
 
   if (wallets.isLoading || categories.isLoading) {
     return <Text className="p-4 text-secondary">Cargando…</Text>;
@@ -64,6 +65,28 @@ export function TransactionForm({ onSaved, transaction, footer, kind: initialKin
 
   const selectedWallet = walletId ?? wallets.data[0]?.id ?? '';
   const currency = wallets.data.find((w) => w.id === selectedWallet)?.currency ?? 'COP';
+  const chooseKind = (k: Kind | 'transfer') => {
+    setKind(k);
+    setCategoryId(null);
+  };
+  // Transferir solo al crear y con dos billeteras o más; editar una es otra pantalla.
+  const kindPicker = (
+    <Segmented
+      options={[
+        { value: 'expense', label: 'Gasto' },
+        { value: 'income', label: 'Ingreso' },
+        ...(!transaction && wallets.data.length > 1
+          ? [{ value: 'transfer' as const, label: 'Transferir' }]
+          : []),
+      ]}
+      value={kind}
+      onChange={chooseKind}
+    />
+  );
+  if (kind === 'transfer') return <TransferForm onSaved={onSaved} header={kindPicker} />;
+  // Ya sin transferencia: las funciones de abajo no heredan el descarte del if.
+  const moveKind: Kind = kind;
+
   const kindCategories = (categories.data ?? []).filter((c) => c.kind === kind);
 
   // Movimiento nuevo sin categoría elegida: la de la última vez con esta nota ("Rappi" → Comida).
@@ -93,7 +116,7 @@ export function TransactionForm({ onSaved, transaction, footer, kind: initialKin
     const name = newCategory?.trim();
     if (!name) return;
     createCategory.mutate(
-      { name, kind },
+      { name, kind: moveKind },
       {
         onSuccess: (c) => {
           setCategoryId(c.id);
@@ -103,22 +126,9 @@ export function TransactionForm({ onSaved, transaction, footer, kind: initialKin
     );
   }
 
-  const chooseKind = (k: Kind) => {
-    setKind(k);
-    setCategoryId(null);
-  };
-  const otherDay = !isSameDay(date, 0) && !isSameDay(date, 1);
-
   return (
     <Form>
-      <Segmented
-        options={[
-          { value: 'expense', label: 'Gasto' },
-          { value: 'income', label: 'Ingreso' },
-        ]}
-        value={kind}
-        onChange={chooseKind}
-      />
+      {kindPicker}
 
       <AmountInput
         label={`Monto (${currency})`}
@@ -128,27 +138,7 @@ export function TransactionForm({ onSaved, transaction, footer, kind: initialKin
         autoFocus
       />
 
-      <FieldLabel>Fecha</FieldLabel>
-      <View className="flex-row flex-wrap gap-2">
-        <Chip label="Hoy" selected={isSameDay(date, 0)} onPress={() => setDate(daysAgo(0))} />
-        <Chip label="Ayer" selected={isSameDay(date, 1)} onPress={() => setDate(daysAgo(1))} />
-        <Chip
-          label={otherDay ? formatDate(date) : 'Otra fecha'}
-          selected={otherDay}
-          onPress={() => setPickingDate(true)}
-        />
-      </View>
-      {pickingDate ? (
-        <DateTimePicker
-          value={date}
-          mode="date"
-          maximumDate={new Date()}
-          onChange={(event, picked) => {
-            setPickingDate(false);
-            if (event.type === 'set' && picked) setDate(picked);
-          }}
-        />
-      ) : null}
+      <DateField value={date} onChange={setDate} />
 
       {wallets.data.length > 1 ? (
         <>
@@ -227,14 +217,4 @@ export function TransactionForm({ onSaved, transaction, footer, kind: initialKin
       {footer}
     </Form>
   );
-}
-
-function daysAgo(n: number) {
-  const d = new Date();
-  d.setDate(d.getDate() - n);
-  return d;
-}
-
-function isSameDay(date: Date, nDaysAgo: number) {
-  return date.toDateString() === daysAgo(nDaysAgo).toDateString();
 }

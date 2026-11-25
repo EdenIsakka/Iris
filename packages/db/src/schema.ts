@@ -166,3 +166,26 @@ export const trm = sqliteTable('trm', {
   date: text().primaryKey(),
   rateMinor: money().notNull(),
 });
+
+/** Plata que pasa de una billetera a otra: no es ingreso ni gasto, solo cambia los saldos. */
+export const transfers = sqliteTable(
+  'transfers',
+  {
+    id: id(),
+    // Como los movimientos: no se borra una billetera con transferencias.
+    fromWalletId: text()
+      .notNull()
+      .references(() => wallets.id),
+    toWalletId: text()
+      .notNull()
+      .references(() => wallets.id),
+    /** Lo que sale, en la moneda de la billetera de origen. */
+    amountMinor: money().notNull(),
+    /** Lo que llega, en la moneda de la de destino; igual a lo que sale si es la misma moneda. */
+    toAmountMinor: money().notNull(),
+    occurredAt: integer({ mode: 'timestamp_ms' }).notNull(),
+    note: text(),
+    createdAt: createdAt(),
+  },
+  (t) => [index('transfers_occurred_idx').on(t.occurredAt)],
+);

@@ -103,6 +103,19 @@ const MIGRATIONS: string[][] = [
       created_at integer not null
     )`,
   ],
+  [
+    `create table transfers (
+      id ${id},
+      from_wallet_id text not null references wallets(id),
+      to_wallet_id text not null references wallets(id),
+      amount_minor ${money},
+      to_amount_minor ${money},
+      occurred_at integer not null,
+      note text,
+      created_at integer not null
+    )`,
+    'create index transfers_occurred_idx on transfers (occurred_at)',
+  ],
 ];
 
 /** Versión de la base; va en las copias para no importar una de una app más nueva. */

@@ -11,5 +11,6 @@ export { investmentsService } from './services/investments';
 export { paymentsService } from './services/payments';
 export { pricesService, unitsValue } from './services/prices';
 export { type TransactionsPage, transactionsService } from './services/transactions';
+export { transfersService } from './services/transfers';
 export { trmService } from './services/trm';
 export { walletsService } from './services/wallets';

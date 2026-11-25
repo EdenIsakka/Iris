@@ -47,7 +47,7 @@ const REMOVE_ERRORS = {
   'not-found': 'No encontramos esta billetera.',
   last: 'Necesitas al menos una billetera.',
   'has-transactions':
-    'Esta billetera tiene movimientos. Bórralos o pásalos a otra billetera primero.',
+    'Esta billetera tiene movimientos o transferencias. Bórralos o pásalos a otra billetera primero.',
 };
 
 export function useDeleteWallet() {

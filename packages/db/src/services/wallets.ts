@@ -1,7 +1,7 @@
 import { type CreateWalletInput, createWalletSchema } from '@finanzas/shared';
-import { asc, count, eq, sql } from 'drizzle-orm';
+import { asc, count, eq, or, sql } from 'drizzle-orm';
 import type { Db } from '../db';
-import { transactions, wallets } from '../schema';
+import { transactions, transfers, wallets } from '../schema';
 
 const toRow = (raw: CreateWalletInput) => {
   const input = createWalletSchema.parse(raw);
@@ -15,7 +15,7 @@ const toRow = (raw: CreateWalletInput) => {
 
 export function walletsService(db: Db) {
   return {
-    /** Cada billetera con su saldo: inicial + ingresos − gastos. */
+    /** Cada billetera con su saldo: inicial + ingresos − gastos − lo que salió + lo que llegó. */
     list() {
       return db
         .select({
@@ -24,14 +24,17 @@ export function walletsService(db: Db) {
           type: wallets.type,
           currency: wallets.currency,
           openingBalanceMinor: wallets.openingBalanceMinor,
-          balanceMinor:
-            sql<bigint>`${wallets.openingBalanceMinor} + coalesce(sum(case when ${transactions.kind} = 'income' then ${transactions.amountMinor} else -${transactions.amountMinor} end), 0)`.mapWith(
-              BigInt,
-            ),
+          // Subconsultas y no join: con dos tablas sumadas a la vez, cada fila se contaría de más.
+          // Nombres con tabla a mano: Drizzle los deja sin tabla y "id" sería el de la subconsulta.
+          balanceMinor: sql<bigint>`wallets.opening_balance_minor
+            + (select coalesce(sum(case when t.kind = 'income' then t.amount_minor else -t.amount_minor end), 0)
+               from transactions t where t.wallet_id = wallets.id)
+            - (select coalesce(sum(f.amount_minor), 0) from transfers f where f.from_wallet_id = wallets.id)
+            + (select coalesce(sum(f.to_amount_minor), 0) from transfers f where f.to_wallet_id = wallets.id)`.mapWith(
+            BigInt,
+          ),
         })
         .from(wallets)
-        .leftJoin(transactions, eq(transactions.walletId, wallets.id))
-        .groupBy(wallets.id)
         .orderBy(asc(wallets.createdAt))
         .all();
     },
@@ -63,7 +66,12 @@ export function walletsService(db: Db) {
         .from(transactions)
         .where(eq(transactions.walletId, id))
         .get();
-      if (used && used.n > 0) return 'has-transactions' as const;
+      const moved = db
+        .select({ n: count() })
+        .from(transfers)
+        .where(or(eq(transfers.fromWalletId, id), eq(transfers.toWalletId, id)))
+        .get();
+      if ((used && used.n > 0) || (moved && moved.n > 0)) return 'has-transactions' as const;
       db.delete(wallets).where(eq(wallets.id, id)).run();
       return 'deleted' as const;
     },

@@ -4,6 +4,8 @@ import { Link } from 'expo-router';
 import { useState } from 'react';
 import { FlatList, Pressable, useColorScheme, View } from 'react-native';
 import { Text } from '@/components/ui/text';
+import { useMonthTransfers } from '@/features/transfers/api';
+import { TransferRow } from '@/features/transfers/components/transfer-row';
 import { palette } from '@/lib/theme';
 import { type Transaction, useCategories, useMonthSummary, useMonthTransactions } from '../api';
 import { CategoryIcon } from './category-icon';
@@ -27,7 +29,11 @@ export function TransactionList() {
   const categories = useCategories();
   const categoryName = (id: string | null) => categories.data?.find((c) => c.id === id)?.name;
   const colors = palette[useColorScheme() === 'dark' ? 'dark' : 'light'];
-  const items = data ?? [];
+  const transfers = useMonthTransfers(back).data;
+  // Movimientos y transferencias juntos, del más nuevo al más viejo.
+  const items = [...(data ?? []), ...(transfers ?? [])].sort(
+    (a, b) => b.occurredAt.getTime() - a.occurredAt.getTime(),
+  );
 
   // step 1 = un mes atrás; -1 = un mes adelante, que no existe estando en el actual.
   const arrow = (step: 1 | -1) => {
@@ -96,12 +102,16 @@ export function TransactionList() {
                 {day}
               </Text>
             ) : null}
-            <TransactionRow
-              item={item}
-              category={categoryName(item.categoryId)}
-              first={first}
-              last={last}
-            />
+            {'fromWalletId' in item ? (
+              <TransferRow item={item} first={first} last={last} />
+            ) : (
+              <TransactionRow
+                item={item}
+                category={categoryName(item.categoryId)}
+                first={first}
+                last={last}
+              />
+            )}
           </>
         );
       }}

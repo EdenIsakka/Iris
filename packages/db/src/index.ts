@@ -9,7 +9,7 @@ export { type Insight, insightsService } from './services/insights';
 export type { InvestmentStats } from './services/investment-stats';
 export { investmentsService } from './services/investments';
 export { paymentsService } from './services/payments';
-export { pricesService } from './services/prices';
+export { pricesService, unitsValue } from './services/prices';
 export { type TransactionsPage, transactionsService } from './services/transactions';
 export { trmService } from './services/trm';
 export { walletsService } from './services/wallets';

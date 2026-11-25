@@ -3,7 +3,7 @@ import {
   createTransactionSchema,
   TRANSACTIONS_PAGE_SIZE,
 } from '@finanzas/shared';
-import { and, desc, eq, gte, lt, sql } from 'drizzle-orm';
+import { and, desc, eq, gte, isNotNull, lt, sql } from 'drizzle-orm';
 import type { Db } from '../db';
 import { BOGOTA_OFFSET_MS, monthKey, monthStart } from '../month';
 import { categories, transactions, wallets } from '../schema';
@@ -80,6 +80,30 @@ export function transactionsService(db: Db) {
         )
         .orderBy(desc(transactions.occurredAt), desc(transactions.id))
         .all();
+    },
+
+    /**
+     * Categoría del último movimiento con esta nota y este tipo, o null. Ignora mayúsculas y
+     * espacios a los lados: "Rappi" y " rappi" son la misma.
+     */
+    categoryForNote(note: string, kind: 'income' | 'expense') {
+      const text = note.trim();
+      if (!text) return null;
+      // shortcut: lower() de SQLite solo baja letras sin tilde; "ÉXITO" y "éxito" no se juntan.
+      const row = db
+        .select({ categoryId: transactions.categoryId })
+        .from(transactions)
+        .where(
+          and(
+            sql`lower(trim(${transactions.note})) = lower(${text})`,
+            eq(transactions.kind, kind),
+            isNotNull(transactions.categoryId),
+          ),
+        )
+        .orderBy(desc(transactions.occurredAt), desc(transactions.id))
+        .limit(1)
+        .get();
+      return row?.categoryId ?? null;
     },
 
     /** null si no existe. */

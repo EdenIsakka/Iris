@@ -26,6 +26,12 @@ export function GoalList() {
   );
 }
 
+/** "2027-03-15" → "marzo de 2027". */
+const monthLabel = (iso: string | null) =>
+  iso
+    ? new Date(`${iso}T12:00:00`).toLocaleDateString('es-CO', { month: 'long', year: 'numeric' })
+    : '';
+
 function GoalRow({ item }: { item: Goal }) {
   const saved = item.savedMinor;
   const target = item.targetMinor;
@@ -65,6 +71,16 @@ function GoalRow({ item }: { item: Goal }) {
         <Text className="text-[13px] text-secondary" style={tabular}>
           {formatMoney(saved)} de {formatMoney(target)}
         </Text>
+        {item.perMonthMinor !== null ? (
+          <Text className="text-[13px] font-medium text-accent" style={tabular}>
+            Ahorra {formatMoney(item.perMonthMinor)} al mes para llegar en{' '}
+            {monthLabel(item.deadline)}
+          </Text>
+        ) : item.late ? (
+          <Text className="text-[13px] font-medium text-negative">
+            Se pasó la fecha: {monthLabel(item.deadline)}
+          </Text>
+        ) : null}
       </Pressable>
     </Link>
   );

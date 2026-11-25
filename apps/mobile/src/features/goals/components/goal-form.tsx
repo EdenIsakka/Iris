@@ -1,8 +1,12 @@
 import { createGoalSchema } from '@finanzas/shared';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { type ReactNode, useState } from 'react';
+import { View } from 'react-native';
 import { AmountInput } from '@/components/ui/amount-input';
+import { Chip } from '@/components/ui/chip';
 import { Button, FieldLabel, Form, FormError, inputClassName } from '@/components/ui/form';
 import { TextInput } from '@/components/ui/text';
+import { formatDate, isoDate } from '@/lib/format-date';
 import { type Goal, useCreateGoal, useUpdateGoal } from '../api';
 
 type Props = {
@@ -18,10 +22,18 @@ export function GoalForm({ onSaved, goal, footer }: Props) {
   const save = goal ? update : create;
   const [name, setName] = useState(goal?.name ?? '');
   const [target, setTarget] = useState(goal?.targetMinor.toString() ?? '');
+  const [deadline, setDeadline] = useState(() =>
+    goal?.deadline ? new Date(`${goal.deadline}T12:00:00`) : null,
+  );
+  const [pickingDate, setPickingDate] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   function submit() {
-    const parsed = createGoalSchema.safeParse({ name, targetMinor: target });
+    const parsed = createGoalSchema.safeParse({
+      name,
+      targetMinor: target,
+      deadline: deadline ? isoDate(deadline) : undefined,
+    });
     if (!parsed.success) {
       const field = parsed.error.issues[0]?.path[0];
       setError(field === 'name' ? 'Escribe un nombre.' : 'Escribe una meta mayor que 0.');
@@ -49,6 +61,29 @@ export function GoalForm({ onSaved, goal, footer }: Props) {
         value={target}
         onChangeValue={setTarget}
       />
+
+      <FieldLabel>¿Para cuándo? (opcional)</FieldLabel>
+      <View className="flex-row flex-wrap gap-2">
+        <Chip
+          label={deadline ? formatDate(deadline) : 'Elegir fecha'}
+          selected={!!deadline}
+          onPress={() => setPickingDate(true)}
+        />
+        {deadline ? (
+          <Chip label="Sin fecha" selected={false} onPress={() => setDeadline(null)} />
+        ) : null}
+      </View>
+      {pickingDate ? (
+        <DateTimePicker
+          value={deadline ?? new Date()}
+          mode="date"
+          minimumDate={new Date()}
+          onChange={(event, picked) => {
+            setPickingDate(false);
+            if (event.type === 'set' && picked) setDeadline(picked);
+          }}
+        />
+      ) : null}
 
       <FormError message={error ?? save.error?.message} />
       <Button

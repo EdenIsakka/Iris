@@ -3,6 +3,7 @@ import type {
   ContributeToInvestmentInput,
   CreateInvestmentInput,
   InvestmentPeriod,
+  PriceSymbol,
   UpdateInvestmentInput,
 } from '@finanzas/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -34,6 +35,17 @@ export function useSavePriceKey() {
       await setPriceKey(key);
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['price-key'] }),
+  });
+}
+
+/** Precio de hoy de 1 unidad, para mostrar cuánto valen las unidades mientras se escriben. */
+export function useQuote(symbol: PriceSymbol) {
+  const key = usePriceKey();
+  return useQuery({
+    queryKey: ['quote', symbol, key.data ?? null],
+    enabled: key.isSuccess,
+    queryFn: () => prices.quote(symbol, key.data ?? null),
+    staleTime: 10 * 60_000,
   });
 }
 

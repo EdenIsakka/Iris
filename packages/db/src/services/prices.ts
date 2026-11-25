@@ -18,6 +18,10 @@ const twelveDataPrice = async (res: Response) =>
 const todayStart = (now: Date) =>
   new Date(Math.floor((now.getTime() - BOGOTA_OFFSET_MS) / DAY_MS) * DAY_MS + BOGOTA_OFFSET_MS);
 
+/** Valor en pesos de unas unidades (en cienmillonésimas) a un precio por unidad, redondeado. */
+export const unitsValue = (quantityE8: bigint, priceMinor: bigint) =>
+  (quantityE8 * priceMinor + 50_000_000n) / 100_000_000n;
+
 /** Precio de 1 unidad en pesos, o null si no se pudo traer. */
 async function priceInCop(
   symbol: PriceSymbol,
@@ -44,6 +48,15 @@ export function pricesService(db: Db, fetchFn: Fetch = (url) => fetch(url)) {
     /** true si Twelve Data da un precio con esta llave. Sin red, lanza el error. */
     async checkKey(key: string) {
       return (await twelveDataPrice(await fetchFn(twelveDataUrl('VOO', key)))) !== null;
+    },
+
+    /** Precio de hoy de 1 unidad en pesos; null sin red, sin llave o (fondos) sin TRM guardada. */
+    async quote(symbol: PriceSymbol, twelveDataKey: string | null) {
+      const trm =
+        PRICED[symbol].kind === 'fund'
+          ? (trmService(db, fetchFn).latest()?.rateMinor ?? null)
+          : null;
+      return priceInCop(symbol, fetchFn, twelveDataKey, trm).catch(() => null);
     },
 
     /**
@@ -76,7 +89,7 @@ export function pricesService(db: Db, fetchFn: Fetch = (url) => fetch(url)) {
           .where(eq(investmentContributions.investmentId, id))
           .all()
           .reduce((acc, c) => acc + (c.q ?? 0n), 0n);
-        const valueMinor = (quantityE8 * price + 50_000_000n) / 100_000_000n;
+        const valueMinor = unitsValue(quantityE8, price);
         db.transaction((tx) => {
           tx.delete(investmentValuations)
             .where(

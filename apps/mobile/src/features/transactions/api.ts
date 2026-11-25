@@ -116,6 +116,10 @@ export function restoreTransaction(t: Transaction) {
   refreshAfterTransaction(queryClient);
 }
 
+/** La categoría que se usó la última vez con esta nota, o null. */
+export const categoryForNote = (note: string, kind: 'income' | 'expense') =>
+  transactions.categoryForNote(note, kind);
+
 /** Borra sin mutación de por medio. Para el "Deshacer" de Repetir. */
 export function removeTransaction(id: string) {
   if (!transactions.remove(id)) throw new Error('Este movimiento ya no existe.');

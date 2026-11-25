@@ -96,6 +96,10 @@ export function BackupPanel() {
 /** "content://…/tree/primary%3ADocuments%2FIris" → "Iris". */
 const folderName = (uri: string) => decodeURIComponent(uri).split(/[:/]/).pop() || uri;
 
+/** Más de 8 días sin copia: la de esta semana falló (carpeta borrada o permiso quitado). */
+const stale = (last: string | null) =>
+  !last || Date.now() - new Date(last).getTime() > 8 * 86_400_000;
+
 /** Copia cada semana, sola, al abrir la app, en una carpeta que se elige una vez. */
 function AutoBackupSection() {
   const queryClient = useQueryClient();
@@ -119,6 +123,12 @@ function AutoBackupSection() {
           Elige una carpeta una vez y cada semana, al abrir Iris, se guarda una copia sola.
         </Text>
       )}
+      {auto && stale(auto.last) ? (
+        <Text className="text-[15px] text-negative">
+          La copia de esta semana no se pudo guardar. Revisa que la carpeta exista, o apaga y vuelve
+          a activar la copia para elegirla de nuevo.
+        </Text>
+      ) : null}
       <Button
         secondary
         label={

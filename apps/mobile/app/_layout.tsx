@@ -4,6 +4,7 @@ import { Stack, ThemeProvider } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useColorScheme, View } from 'react-native';
 import { UndoBar } from '@/components/ui/undo-bar';
+import { runAutoBackupIfDue } from '@/features/backup/auto-backup';
 import { watchPayments } from '@/features/payments/api';
 import { loadColorScheme } from '@/lib/color-scheme';
 import { queryClient } from '@/lib/query-client';
@@ -11,6 +12,7 @@ import { navigationTheme, themeVars } from '@/lib/theme';
 
 loadColorScheme();
 watchPayments(queryClient);
+runAutoBackupIfDue().catch(() => {});
 
 const modal = (title: string) => ({ presentation: 'modal' as const, headerShown: true, title });
 

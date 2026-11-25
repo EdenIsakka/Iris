@@ -1,10 +1,12 @@
 import { backupService } from '@finanzas/db';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Directory, File } from 'expo-file-system';
 import { Alert } from 'react-native';
 import { Button, Form, FormError } from '@/components/ui/form';
 import { Text } from '@/components/ui/text';
 import { db } from '@/lib/db';
+import { formatDate } from '@/lib/format-date';
+import { disableAutoBackup, enableAutoBackup, getAutoBackup, writeBackup } from './auto-backup';
 
 const backup = backupService(db);
 
@@ -31,10 +33,7 @@ export function BackupPanel() {
       // Sin carpeta elegida (cancelar) no hay nada que guardar.
       const folder = await Directory.pickDirectoryAsync().catch(() => null);
       if (!folder) return null;
-      const date = new Date().toISOString().slice(0, 10);
-      const file = folder.createFile(`iris-${date}.json`, 'application/json');
-      await file.write(JSON.stringify(backup.exportData()));
-      return file.name;
+      return writeBackup(folder);
     },
   });
 
@@ -73,6 +72,8 @@ export function BackupPanel() {
         </Text>
       ) : null}
 
+      <AutoBackupSection />
+
       <Text className="mt-6 text-[15px]">
         Para pasar tus datos a otro celular, instala la app allí y abre la copia.
       </Text>
@@ -87,5 +88,48 @@ export function BackupPanel() {
         <Text className="text-secondary">Listo: se cargaron los datos de la copia.</Text>
       ) : null}
     </Form>
+  );
+}
+
+/** "content://…/tree/primary%3ADocuments%2FIris" → "Iris". */
+const folderName = (uri: string) => decodeURIComponent(uri).split(/[:/]/).pop() || uri;
+
+/** Copia cada semana, sola, al abrir la app, en una carpeta que se elige una vez. */
+function AutoBackupSection() {
+  const queryClient = useQueryClient();
+  const state = useQuery({ queryKey: ['auto-backup'], queryFn: getAutoBackup });
+  const toggle = useMutation({
+    mutationFn: async (on: boolean) => (on ? enableAutoBackup() : disableAutoBackup()),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['auto-backup'] }),
+  });
+  const auto = state.data;
+
+  return (
+    <>
+      <Text className="mt-6 text-[17px] font-semibold">Copia automática</Text>
+      {auto ? (
+        <Text className="text-[15px] text-secondary">
+          Cada semana, al abrir Iris, se guarda una copia en «{folderName(auto.folder)}».
+          {auto.last ? ` Última: ${formatDate(new Date(auto.last))}.` : ''}
+        </Text>
+      ) : (
+        <Text className="text-[15px] text-secondary">
+          Elige una carpeta una vez y cada semana, al abrir Iris, se guarda una copia sola.
+        </Text>
+      )}
+      <Button
+        secondary
+        label={
+          toggle.isPending
+            ? 'Guardando…'
+            : auto
+              ? 'Apagar copia automática'
+              : 'Activar copia semanal'
+        }
+        onPress={() => toggle.mutate(!auto)}
+        disabled={toggle.isPending || state.isLoading}
+      />
+      <FormError message={toggle.error?.message} />
+    </>
   );
 }

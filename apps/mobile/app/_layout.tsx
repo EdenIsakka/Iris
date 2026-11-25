@@ -23,6 +23,10 @@ export default function RootLayout() {
         <QueryClientProvider client={queryClient}>
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="(tabs)" />
+            <Stack.Screen
+              name="transactions/index"
+              options={{ headerShown: true, title: 'Movimientos' }}
+            />
             <Stack.Screen name="transactions/new" options={modal('Nuevo movimiento')} />
             <Stack.Screen name="transactions/[id]" options={modal('Editar movimiento')} />
             <Stack.Screen name="categories" options={modal('Categorías')} />
@@ -38,7 +42,6 @@ export default function RootLayout() {
             <Stack.Screen name="investments/[id]/index" options={modal('Inversión')} />
             <Stack.Screen name="investments/[id]/edit" options={modal('Editar inversión')} />
             <Stack.Screen name="price-key" options={modal('Precios automáticos')} />
-            <Stack.Screen name="payments" options={modal('Pagos por hacer')} />
             <Stack.Screen name="payments/new" options={modal('Nuevo pago')} />
             <Stack.Screen name="payments/[id]" options={modal('Pago')} />
             <Stack.Screen name="backup" options={modal('Copia de seguridad')} />

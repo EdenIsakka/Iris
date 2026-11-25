@@ -3,6 +3,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { Stack, ThemeProvider } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useColorScheme, View } from 'react-native';
+import { UndoBar } from '@/components/ui/undo-bar';
 import { watchPayments } from '@/features/payments/api';
 import { loadColorScheme } from '@/lib/color-scheme';
 import { queryClient } from '@/lib/query-client';
@@ -48,6 +49,7 @@ export default function RootLayout() {
           </Stack>
         </QueryClientProvider>
       </ThemeProvider>
+      <UndoBar />
       <StatusBar style="auto" />
     </View>
   );

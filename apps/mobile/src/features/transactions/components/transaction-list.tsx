@@ -50,7 +50,9 @@ export function TransactionList() {
         </View>
       }
       ListEmptyComponent={
-        <Text className="py-8 text-center text-secondary">Aún no tienes movimientos.</Text>
+        <Text className="py-8 text-center text-secondary">
+          {filter === 'all' ? 'Aún no tienes movimientos.' : 'No hay movimientos de este tipo.'}
+        </Text>
       }
       onEndReached={() => {
         if (hasNextPage && !isFetchingNextPage) fetchNextPage();

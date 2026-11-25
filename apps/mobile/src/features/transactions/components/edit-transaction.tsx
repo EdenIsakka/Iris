@@ -1,7 +1,8 @@
 import { Alert } from 'react-native';
 import { Button } from '@/components/ui/form';
 import { Text } from '@/components/ui/text';
-import { useDeleteTransaction, useTransaction } from '../api';
+import { showUndo } from '@/lib/undo';
+import { restoreTransaction, useDeleteTransaction, useTransaction } from '../api';
 import { TransactionForm } from './transaction-form';
 
 type Props = { id: string; onDone: () => void };
@@ -14,19 +15,17 @@ export function EditTransaction({ id, onDone }: Props) {
   if (error) return <Text className="p-4">{error.message}</Text>;
   if (!transaction) return <Text className="p-4">No encontramos este movimiento.</Text>;
 
-  function confirmDelete() {
-    Alert.alert('¿Borrar este movimiento?', 'No se puede deshacer.', [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Borrar',
-        style: 'destructive',
-        onPress: () =>
-          remove.mutate(id, {
-            onSuccess: onDone,
-            onError: (e) => Alert.alert('No se pudo borrar', e.message),
-          }),
+  // Sin "¿Seguro?": se borra de una y la barra de abajo deja deshacerlo unos segundos.
+  function deleteNow() {
+    if (!transaction) return;
+    const deleted = transaction;
+    remove.mutate(id, {
+      onSuccess: () => {
+        showUndo('Movimiento borrado', () => restoreTransaction(deleted));
+        onDone();
       },
-    ]);
+      onError: (e) => Alert.alert('No se pudo borrar', e.message),
+    });
   }
 
   return (
@@ -37,7 +36,7 @@ export function EditTransaction({ id, onDone }: Props) {
         <Button
           destructive
           label={remove.isPending ? 'Borrando…' : 'Borrar movimiento'}
-          onPress={confirmDelete}
+          onPress={deleteNow}
           disabled={remove.isPending}
         />
       }

@@ -42,6 +42,14 @@ export function useTransaction(id: string) {
   return useQuery({ queryKey: [...transactionKeys.all, id], queryFn: () => transactions.get(id) });
 }
 
+/** Todos los movimientos del mes que está `back` meses atrás (0 = este mes). */
+export function useMonthTransactions(back: number) {
+  return useQuery({
+    queryKey: [...transactionKeys.all, 'month', back],
+    queryFn: () => transactions.month(back),
+  });
+}
+
 export type Transaction = NonNullable<ReturnType<typeof transactions.get>>;
 
 // Cuelga de transactionKeys.all para que crear un movimiento también refresque el resumen.

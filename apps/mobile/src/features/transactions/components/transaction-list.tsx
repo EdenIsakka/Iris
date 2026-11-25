@@ -1,35 +1,53 @@
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { formatMoney } from '@finanzas/shared';
 import { Link } from 'expo-router';
 import { useState } from 'react';
-import { FlatList, Pressable, View } from 'react-native';
-import { Chip } from '@/components/ui/chip';
+import { FlatList, Pressable, useColorScheme, View } from 'react-native';
 import { Text } from '@/components/ui/text';
-import { type Transaction, useCategories, useTransactions } from '../api';
+import { palette } from '@/lib/theme';
+import { type Transaction, useCategories, useMonthTransactions } from '../api';
 import { CategoryIcon } from './category-icon';
 
-const FILTERS = [
-  { value: 'all', label: 'Todo' },
-  { value: 'expense', label: 'Gastos' },
-  { value: 'income', label: 'Ingresos' },
-] as const;
+const capitalize = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
 
-const dayLabel = (date: Date) => {
-  const text = date.toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long' });
-  return text.charAt(0).toUpperCase() + text.slice(1);
+const dayLabel = (date: Date) =>
+  capitalize(date.toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long' }));
+
+const monthLabel = (back: number) => {
+  const now = new Date();
+  const first = new Date(now.getFullYear(), now.getMonth() - back, 1);
+  return capitalize(first.toLocaleDateString('es-CO', { month: 'long', year: 'numeric' }));
 };
 
+/** Los movimientos de un mes, agrupados por día; las flechas pasan a otros meses. */
 export function TransactionList() {
-  const { data, isLoading, error, hasNextPage, fetchNextPage, isFetchingNextPage } =
-    useTransactions();
+  const [back, setBack] = useState(0);
+  const { data, isLoading, error } = useMonthTransactions(back);
   const categories = useCategories();
   const categoryName = (id: string | null) => categories.data?.find((c) => c.id === id)?.name;
-  const [filter, setFilter] = useState<(typeof FILTERS)[number]['value']>('all');
+  const colors = palette[useColorScheme() === 'dark' ? 'dark' : 'light'];
+  const items = data ?? [];
 
-  if (isLoading) return <Text className="text-secondary">Cargando…</Text>;
-  if (error && !data) return <Text>{error.message}</Text>;
-  // shortcut: filtra lo ya cargado y la lista pide más páginas al llegar al final; si filtrar
-  // se vuelve lento con miles de movimientos, pasar el tipo a la consulta.
-  const items = (data?.pages.flat() ?? []).filter((t) => filter === 'all' || t.kind === filter);
+  // step 1 = un mes atrás; -1 = un mes adelante, que no existe estando en el actual.
+  const arrow = (step: 1 | -1) => {
+    const disabled = step === -1 && back === 0;
+    return (
+      <Pressable
+        className="min-h-[44px] min-w-[44px] items-center justify-center active:opacity-60"
+        disabled={disabled}
+        onPress={() => setBack(back + step)}
+        accessibilityRole="button"
+        accessibilityLabel={step === 1 ? 'Mes anterior' : 'Mes siguiente'}
+        accessibilityState={{ disabled }}
+      >
+        <Ionicons
+          name={step === 1 ? 'chevron-back' : 'chevron-forward'}
+          size={24}
+          color={disabled ? colors.separator : colors.accent}
+        />
+      </Pressable>
+    );
+  };
 
   return (
     <FlatList
@@ -38,33 +56,18 @@ export function TransactionList() {
       data={items}
       keyExtractor={(t) => t.id}
       ListHeaderComponent={
-        <View className="flex-row gap-2">
-          {FILTERS.map((f) => (
-            <Chip
-              key={f.value}
-              label={f.label}
-              selected={filter === f.value}
-              onPress={() => setFilter(f.value)}
-            />
-          ))}
+        <View className="flex-row items-center justify-between pt-2">
+          {arrow(1)}
+          <Text className="text-[17px] font-semibold" accessibilityRole="header">
+            {monthLabel(back)}
+          </Text>
+          {arrow(-1)}
         </View>
       }
       ListEmptyComponent={
         <Text className="py-8 text-center text-secondary">
-          {filter === 'all' ? 'Aún no tienes movimientos.' : 'No hay movimientos de este tipo.'}
+          {isLoading ? 'Cargando…' : error ? error.message : 'No hay movimientos en este mes.'}
         </Text>
-      }
-      onEndReached={() => {
-        if (hasNextPage && !isFetchingNextPage) fetchNextPage();
-      }}
-      ListFooterComponent={
-        isFetchingNextPage ? (
-          <Text className="py-4 text-center text-secondary">Cargando más…</Text>
-        ) : error ? (
-          <Text className="py-4 text-negative" accessibilityRole="alert">
-            {error.message}
-          </Text>
-        ) : undefined
       }
       // Agrupa por día: cada fila sabe si abre o cierra su grupo para redondear la tarjeta.
       renderItem={({ item, index }) => {
@@ -132,7 +135,7 @@ export function TransactionRow({ item, category, first, last, inCard }: RowProps
           ) : null}
         </View>
         <Text
-          className={`text-[17px] font-medium ${income ? 'text-positive' : ''}`}
+          className={`text-[17px] font-medium ${income ? 'text-positive' : 'text-negative'}`}
           style={{ fontVariant: ['tabular-nums'] }}
         >
           {income ? '+' : '−'}

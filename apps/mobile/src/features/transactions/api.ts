@@ -53,10 +53,10 @@ export function useMonthTransactions(back: number) {
 export type Transaction = NonNullable<ReturnType<typeof transactions.get>>;
 
 // Cuelga de transactionKeys.all para que crear un movimiento también refresque el resumen.
-export function useMonthSummary() {
+export function useMonthSummary(back = 0) {
   return useQuery({
-    queryKey: [...transactionKeys.all, 'summary'],
-    queryFn: () => transactions.monthSummary(),
+    queryKey: [...transactionKeys.all, 'summary', back],
+    queryFn: () => transactions.monthSummary(new Date(), back),
   });
 }
 

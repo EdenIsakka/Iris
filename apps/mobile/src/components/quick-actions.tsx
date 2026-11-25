@@ -25,7 +25,7 @@ export function QuickActions() {
       {ACTIONS.map((a) => (
         <Link key={a.label} href={a.href} asChild>
           <Pressable
-            className="w-[80px] items-center gap-1.5 active:opacity-60"
+            className="flex-1 items-center gap-1.5 active:opacity-60"
             accessibilityRole="button"
             accessibilityLabel={a.label}
           >

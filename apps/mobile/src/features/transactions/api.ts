@@ -16,7 +16,7 @@ export const transactionKeys = { all: ['transactions'] as const };
 const categoryKeys = { all: ['categories'] as const };
 
 /** Un movimiento cambia la lista, el resumen y el saldo de su billetera. */
-function refreshAfterTransaction(queryClient: ReturnType<typeof useQueryClient>) {
+export function refreshAfterTransaction(queryClient: ReturnType<typeof useQueryClient>) {
   queryClient.invalidateQueries({ queryKey: transactionKeys.all });
   queryClient.invalidateQueries({ queryKey: walletKeys.all });
 }

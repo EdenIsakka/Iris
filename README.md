@@ -1,10 +1,10 @@
 # Iris
 
-Gestor de finanzas personales pensado para el celular: registra ingresos y gastos, fija topes por categoría, crea metas de ahorro y sigue tus inversiones.
+Gestor de finanzas personales pensado para el celular: registra ingresos, gastos y transferencias entre billeteras, fija topes por categoría, crea metas de ahorro con fecha, programa pagos y sigue tus inversiones.
 
-Todo se guarda en tu celular: no hay servidor ni cuenta que crear.
+Todo se guarda en tu celular: no hay servidor ni cuenta que crear. Puedes pedir la huella o el PIN para abrirla y guardar una copia automática cada semana.
 
-**[Descargar la APK para Android](https://github.com/EdenIsakka/Iris/releases/latest)** (en _Assets_ del último release; solo Android).
+**[Descargar la APK para Android](https://github.com/EdenIsakka/Iris/releases/latest)** (en _Assets_ del último release; solo Android). Cada release trae el SHA-256 de la APK para comprobar que es la original.
 
 ## Capturas
 

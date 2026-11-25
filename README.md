@@ -9,17 +9,15 @@ Todo se guarda en tu celular: no hay servidor ni cuenta que crear.
 ## Capturas
 
 <p>
-  <img src="docs/screenshots/resumen.jpeg" alt="Resumen con billeteras en COP y USD" width="200">
-  <img src="docs/screenshots/resumen-grafica.jpeg" alt="Gráfica de 6 meses y topes del mes" width="200">
-  <img src="docs/screenshots/movimientos.jpeg" alt="Lista de movimientos" width="200">
-  <img src="docs/screenshots/nuevo-gasto.jpeg" alt="Formulario de nuevo gasto" width="200">
+  <img src="docs/screenshots/resumen.png" alt="Resumen en modo oscuro: saldo total, atajos y billeteras" width="200">
+  <img src="docs/screenshots/resumen-claro.png" alt="Resumen en modo claro" width="200">
+  <img src="docs/screenshots/ultimos-movimientos.png" alt="Últimos movimientos con ingresos en verde y gastos en rojo" width="200">
 </p>
 
 <p>
-  <img src="docs/screenshots/nuevo-ingreso.jpeg" alt="Formulario de nuevo ingreso" width="200">
-  <img src="docs/screenshots/metas.jpeg" alt="Metas de ahorro" width="200">
-  <img src="docs/screenshots/inversiones.jpeg" alt="Inversiones con totales" width="200">
-  <img src="docs/screenshots/nueva-inversion.jpeg" alt="Nueva inversión con precio automático" width="200">
+  <img src="docs/screenshots/gastos-del-mes.png" alt="Gastos del mes por categoría" width="200">
+  <img src="docs/screenshots/pagos.png" alt="Pagos programados con aviso un día antes" width="200">
+  <img src="docs/screenshots/metas.png" alt="Metas de ahorro" width="200">
 </p>
 
 ## Stack

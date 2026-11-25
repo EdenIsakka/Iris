@@ -1,50 +1,36 @@
-import Ionicons from '@expo/vector-icons/Ionicons';
-import type { ComponentProps } from 'react';
-import { View } from 'react-native';
+import { type IconName, type Ramp, rampColor, TintedIcon } from '@/components/ui/tinted-icon';
 
-type IconName = ComponentProps<typeof Ionicons>['name'];
-
-// Tonos medios: el ícono blanco se lee encima tanto en tema claro como oscuro.
-const STYLES: Record<string, [IconName, string]> = {
-  Mercado: ['cart', '#1D9E75'],
-  Transporte: ['bus', '#378ADD'],
-  Arriendo: ['home', '#7F77DD'],
-  Servicios: ['flash', '#BA7517'],
-  Salud: ['medkit', '#E24B4A'],
-  Restaurantes: ['restaurant', '#D85A30'],
-  Entretenimiento: ['film', '#D4537E'],
-  Educación: ['school', '#534AB7'],
-  Ropa: ['shirt', '#993556'],
-  Deudas: ['card', '#A32D2D'],
-  Salario: ['cash', '#0F6E56'],
-  'Trabajo extra': ['briefcase', '#1D9E75'],
-  Ventas: ['pricetag', '#639922'],
-  Regalos: ['gift', '#D4537E'],
+const STYLES: Record<string, [IconName, Ramp]> = {
+  Mercado: ['cart', 'teal'],
+  Transporte: ['bus', 'blue'],
+  Arriendo: ['home', 'purple'],
+  Servicios: ['flash', 'amber'],
+  Salud: ['medkit', 'red'],
+  Restaurantes: ['restaurant', 'coral'],
+  Entretenimiento: ['film', 'pink'],
+  Educación: ['school', 'blue'],
+  Ropa: ['shirt', 'pink'],
+  Deudas: ['card', 'red'],
+  Salario: ['cash', 'teal'],
+  'Trabajo extra': ['briefcase', 'teal'],
+  Ventas: ['pricetag', 'green'],
+  Regalos: ['gift', 'pink'],
 };
 
+const styleOf = (name?: string | null, income?: boolean): [IconName, Ramp] =>
+  (name && STYLES[name]) || (income ? ['arrow-down', 'teal'] : ['pricetag', 'gray']);
+
+type Props = { name?: string | null; income?: boolean; small?: boolean };
+
 /**
- * Círculo de color con el ícono de la categoría.
+ * Ícono de la categoría en un círculo de su color.
  * shortcut: va por el nombre de las categorías que trae la app; las nuevas o renombradas
  * usan el genérico. Si se quiere elegir ícono, guardar ícono y color en `categories`.
  */
-type Props = { name?: string | null; income?: boolean; small?: boolean };
-
 export function CategoryIcon({ name, income, small }: Props) {
-  const [icon, color] = (name && STYLES[name]) || [
-    income ? 'arrow-down' : 'pricetag',
-    income ? '#0F6E56' : '#888780',
-  ];
-  return (
-    <View
-      className={`items-center justify-center rounded-full ${small ? 'h-8 w-8' : 'h-9 w-9'}`}
-      style={{ backgroundColor: color }}
-      accessibilityElementsHidden
-      importantForAccessibility="no-hide-descendants"
-    >
-      <Ionicons name={icon} size={small ? 15 : 18} color="#FFFFFF" />
-    </View>
-  );
+  const [icon, ramp] = styleOf(name, income);
+  return <TintedIcon icon={icon} ramp={ramp} size={small ? 'sm' : 'md'} />;
 }
 
 /** El color de la categoría, para barras y leyendas. */
-export const categoryColor = (name?: string | null) => (name && STYLES[name]?.[1]) || '#888780';
+export const categoryColor = (name?: string | null) => rampColor(styleOf(name)[1]);

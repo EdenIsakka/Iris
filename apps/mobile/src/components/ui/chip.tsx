@@ -8,7 +8,8 @@ export function Chip({ label, selected, onPress, icon }: Props) {
   return (
     <Pressable
       onPress={onPress}
-      className={`min-h-[44px] flex-row items-center gap-2 rounded-full ${icon ? 'pl-1.5 pr-4' : 'px-4'} ${
+      hitSlop={4}
+      className={`min-h-[36px] flex-row items-center gap-2 rounded-full ${icon ? 'pl-1.5 pr-4' : 'px-4'} ${
         selected ? 'bg-accent' : 'bg-fill'
       }`}
       accessibilityRole="button"

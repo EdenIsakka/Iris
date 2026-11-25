@@ -1,9 +1,9 @@
-import Ionicons from '@expo/vector-icons/Ionicons';
 import { formatMoney } from '@finanzas/shared';
 import { Link } from 'expo-router';
 import { FlatList, Pressable, View } from 'react-native';
 import { tabular } from '@/components/ui/hero';
 import { Text } from '@/components/ui/text';
+import { TintedIcon } from '@/components/ui/tinted-icon';
 import { type Goal, useGoals } from '../api';
 
 export function GoalList() {
@@ -39,9 +39,7 @@ function GoalRow({ item }: { item: Goal }) {
         accessibilityHint="Abre el formulario para aportar a esta meta"
       >
         <View className="flex-row items-center gap-3">
-          <View className="h-10 w-10 items-center justify-center rounded-full bg-hero">
-            <Ionicons name={done ? 'trophy' : 'flag'} size={18} color="#EEEDFE" />
-          </View>
+          <TintedIcon icon={done ? 'trophy' : 'flag'} ramp={done ? 'green' : 'purple'} />
           <View className="flex-1">
             <Text className="text-[17px] font-semibold" numberOfLines={1}>
               {item.name}

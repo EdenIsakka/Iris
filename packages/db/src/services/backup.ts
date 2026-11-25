@@ -1,6 +1,26 @@
-import { sql } from 'drizzle-orm';
+import { is, sql } from 'drizzle-orm';
+import { getTableConfig, SQLiteTable } from 'drizzle-orm/sqlite-core';
 import type { Db } from '../db';
 import { SCHEMA_VERSION } from '../migrations';
+import * as schema from '../schema';
+
+/**
+ * Tabla → columna → valores permitidos, sacados del esquema (moneda, tipo, estado…). Una copia
+ * con "EUR" haría caer la app al mostrar esa billetera, y sin app no hay cómo restaurar otra.
+ */
+const ENUMS = new Map(
+  Object.values(schema)
+    .filter((t) => is(t, SQLiteTable))
+    .map((t) => {
+      const config = getTableConfig(t);
+      const enums = config.columns.flatMap((c) =>
+        'enumValues' in c && Array.isArray(c.enumValues)
+          ? [[c.name, c.enumValues as readonly string[]] as const]
+          : [],
+      );
+      return [config.name, new Map(enums)] as const;
+    }),
+);
 
 /** En orden de dependencia: cada tabla solo apunta a las de antes. */
 const TABLES = [
@@ -74,9 +94,14 @@ export function backupService(db: Db) {
         if (!Array.isArray(rows)) throw new Error(NOT_A_BACKUP);
         // Solo columnas que existen: los nombres van dentro del SQL.
         const columns = columnsOf(table);
+        const enums = ENUMS.get(table);
         for (const row of rows) {
           if (!row || typeof row !== 'object') throw new Error(NOT_A_BACKUP);
           for (const [key, value] of Object.entries(row)) {
+            const allowed = enums?.get(key);
+            if (allowed && value !== null && !allowed.includes(value as string)) {
+              throw new Error(NOT_A_BACKUP);
+            }
             const type = columns.get(key);
             // Montos y fechas enteros: la app los lee con BigInt, que no acepta decimales.
             const ok =

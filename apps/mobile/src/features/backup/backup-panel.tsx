@@ -6,6 +6,7 @@ import { Button, Form, FormError } from '@/components/ui/form';
 import { Text } from '@/components/ui/text';
 import { db } from '@/lib/db';
 import { formatDate } from '@/lib/format-date';
+import { isLockOn, setLock } from '@/lib/lock';
 import { disableAutoBackup, enableAutoBackup, getAutoBackup, writeBackup } from './auto-backup';
 
 const backup = backupService(db);
@@ -73,6 +74,7 @@ export function BackupPanel() {
       ) : null}
 
       <AutoBackupSection />
+      <LockSection />
 
       <Text className="mt-6 text-[15px]">
         Para pasar tus datos a otro celular, instala la app allí y abre la copia.
@@ -127,6 +129,35 @@ function AutoBackupSection() {
               : 'Activar copia semanal'
         }
         onPress={() => toggle.mutate(!auto)}
+        disabled={toggle.isPending || state.isLoading}
+      />
+      <FormError message={toggle.error?.message} />
+    </>
+  );
+}
+
+/** Pedir huella o PIN al abrir Iris. Apagado por defecto. */
+function LockSection() {
+  const queryClient = useQueryClient();
+  const state = useQuery({ queryKey: ['lock'], queryFn: isLockOn });
+  const toggle = useMutation({
+    mutationFn: setLock,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['lock'] }),
+  });
+  const on = state.data === true;
+
+  return (
+    <>
+      <Text className="mt-6 text-[17px] font-semibold">Bloqueo con huella</Text>
+      <Text className="text-[15px] text-secondary">
+        {on
+          ? 'Iris pide tu huella o el PIN del celular al abrirla.'
+          : 'Si prestas el celular, Iris puede pedir tu huella o el PIN antes de mostrar tus datos.'}
+      </Text>
+      <Button
+        secondary
+        label={toggle.isPending ? 'Esperando…' : on ? 'Apagar bloqueo' : 'Prender bloqueo'}
+        onPress={() => toggle.mutate(!on)}
         disabled={toggle.isPending || state.isLoading}
       />
       <FormError message={toggle.error?.message} />

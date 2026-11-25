@@ -49,7 +49,7 @@ export default function DashboardScreen() {
             className="min-h-[44px] items-center justify-center"
             accessibilityRole="button"
           >
-            <Text className="text-[15px] text-accent">Copia de seguridad</Text>
+            <Text className="text-[15px] text-accent">Copia y seguridad</Text>
           </Pressable>
         </Link>
       </ScrollView>

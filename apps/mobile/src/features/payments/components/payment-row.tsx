@@ -22,7 +22,7 @@ export function PaymentRow({ payment: p }: { payment: Payment }) {
   const money = (v: bigint) => formatMoney(v, p.currency);
   const enough = p.leftMinor >= 0n;
   return (
-    <View className="flex-1 flex-row items-center gap-3 py-2">
+    <View className="flex-row items-center gap-3 py-2">
       <TintedIcon icon="calendar" ramp={enough ? 'purple' : 'red'} />
       <View className="flex-1 gap-0.5">
         <View className="flex-row justify-between gap-2">

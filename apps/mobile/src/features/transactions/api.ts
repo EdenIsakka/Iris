@@ -16,7 +16,7 @@ export const transactionKeys = { all: ['transactions'] as const };
 const categoryKeys = { all: ['categories'] as const };
 
 /** Un movimiento cambia la lista, el resumen y el saldo de su billetera. */
-function refreshAfterTransaction(queryClient: ReturnType<typeof useQueryClient>) {
+export function refreshAfterTransaction(queryClient: ReturnType<typeof useQueryClient>) {
   queryClient.invalidateQueries({ queryKey: transactionKeys.all });
   queryClient.invalidateQueries({ queryKey: walletKeys.all });
 }
@@ -53,10 +53,10 @@ export function useMonthTransactions(back: number) {
 export type Transaction = NonNullable<ReturnType<typeof transactions.get>>;
 
 // Cuelga de transactionKeys.all para que crear un movimiento también refresque el resumen.
-export function useMonthSummary() {
+export function useMonthSummary(back = 0) {
   return useQuery({
-    queryKey: [...transactionKeys.all, 'summary'],
-    queryFn: () => transactions.monthSummary(),
+    queryKey: [...transactionKeys.all, 'summary', back],
+    queryFn: () => transactions.monthSummary(new Date(), back),
   });
 }
 
@@ -113,6 +113,12 @@ export function restoreTransaction(t: Transaction) {
     note: t.note ?? undefined,
   });
   if (!created) throw new Error('La billetera de este movimiento ya no existe.');
+  refreshAfterTransaction(queryClient);
+}
+
+/** Borra sin mutación de por medio. Para el "Deshacer" de Repetir. */
+export function removeTransaction(id: string) {
+  if (!transactions.remove(id)) throw new Error('Este movimiento ya no existe.');
   refreshAfterTransaction(queryClient);
 }
 

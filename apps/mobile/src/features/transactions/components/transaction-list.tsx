@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { FlatList, Pressable, useColorScheme, View } from 'react-native';
 import { Text } from '@/components/ui/text';
 import { palette } from '@/lib/theme';
-import { type Transaction, useCategories, useMonthTransactions } from '../api';
+import { type Transaction, useCategories, useMonthSummary, useMonthTransactions } from '../api';
 import { CategoryIcon } from './category-icon';
 
 const capitalize = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
@@ -23,6 +23,7 @@ const monthLabel = (back: number) => {
 export function TransactionList() {
   const [back, setBack] = useState(0);
   const { data, isLoading, error } = useMonthTransactions(back);
+  const summary = useMonthSummary(back).data;
   const categories = useCategories();
   const categoryName = (id: string | null) => categories.data?.find((c) => c.id === id)?.name;
   const colors = palette[useColorScheme() === 'dark' ? 'dark' : 'light'];
@@ -56,12 +57,21 @@ export function TransactionList() {
       data={items}
       keyExtractor={(t) => t.id}
       ListHeaderComponent={
-        <View className="flex-row items-center justify-between pt-2">
-          {arrow(1)}
-          <Text className="text-[17px] font-semibold" accessibilityRole="header">
-            {monthLabel(back)}
-          </Text>
-          {arrow(-1)}
+        <View className="pt-2">
+          <View className="flex-row items-center justify-between">
+            {arrow(1)}
+            <Text className="text-[17px] font-semibold" accessibilityRole="header">
+              {monthLabel(back)}
+            </Text>
+            {arrow(-1)}
+          </View>
+          {summary ? (
+            <Text className="text-center text-[15px]" style={{ fontVariant: ['tabular-nums'] }}>
+              <Text className="text-positive">Entró {formatMoney(summary.incomeMinor)}</Text>
+              <Text className="text-secondary"> · </Text>
+              <Text className="text-negative">Salió {formatMoney(summary.expenseMinor)}</Text>
+            </Text>
+          ) : null}
         </View>
       }
       ListEmptyComponent={

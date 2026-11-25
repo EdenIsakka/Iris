@@ -1,6 +1,7 @@
 import { paymentsService } from '@finanzas/db';
 import type { SavePaymentInput } from '@finanzas/shared';
 import { type QueryClient, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { refreshAfterTransaction } from '@/features/transactions/api';
 import { db } from '@/lib/db';
 import { askReminderPermission, canRemind, scheduleReminders } from './reminders';
 
@@ -64,6 +65,8 @@ export function usePayPayment() {
     mutationFn: async (id: string) => {
       if (!payments.pay(id)) throw new Error('Este pago ya no existe.');
     },
-    onSuccess: () => queryClient.invalidateQueries(),
+    // Sin esperar: recargar todo esperaba también precios y TRM de internet, y con mala señal
+    // la pantalla no se cerraba. La lista de pagos la recalcula watchPayments.
+    onSuccess: () => refreshAfterTransaction(queryClient),
   });
 }

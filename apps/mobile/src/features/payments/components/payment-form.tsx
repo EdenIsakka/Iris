@@ -160,7 +160,8 @@ export function EditPayment({ id, onDone }: { id: string; onDone: () => void }) 
   if (error) return <Text className="p-4">{error.message}</Text>;
   const payment = data?.find((p) => p.id === id);
   if (!payment) return <Text className="p-4">No encontramos este pago.</Text>;
-  const busy = pay.isPending || remove.isPending;
+  // Ya pagado no se vuelve a tocar: cada toque guardaría otro gasto y saltaría otro mes.
+  const busy = pay.isPending || pay.isSuccess || remove.isPending;
 
   function confirmDelete() {
     Alert.alert('¿Borrar este pago?', 'Ya no te avisaré de él. Tus movimientos no cambian.', [

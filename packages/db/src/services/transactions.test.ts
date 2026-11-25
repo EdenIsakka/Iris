@@ -32,6 +32,27 @@ describe('transactionsService', () => {
     expect(moves.month(1, now).map((t) => t.amountMinor)).toEqual([1n]);
   });
 
+  it('sugiere la categoría del último movimiento con la misma nota', () => {
+    const { moves, categories, wallet, food } = setup();
+    const fun = categories.create({ name: 'Cine', kind: 'expense' }).id;
+    const add = (note: string, categoryId: string | null, occurredAt: string) =>
+      moves.create({
+        walletId: wallet,
+        categoryId,
+        kind: 'expense',
+        amountMinor: '1',
+        occurredAt,
+        note,
+      });
+    add('Rappi', fun, '2026-11-01T12:00:00Z');
+    add('Rappi', food, '2026-11-05T12:00:00Z');
+    add('Rappi', null, '2026-11-06T12:00:00Z'); // sin categoría: no cuenta
+    expect(moves.categoryForNote('  rappi ', 'expense')).toBe(food);
+    expect(moves.categoryForNote('Rappi', 'income')).toBeNull();
+    expect(moves.categoryForNote('Uber', 'expense')).toBeNull();
+    expect(moves.categoryForNote('   ', 'expense')).toBeNull();
+  });
+
   it('toma la moneda de la billetera', () => {
     const { add } = setup();
     expect(add('100', '2026-11-10T12:00:00Z')?.currency).toBe('COP');

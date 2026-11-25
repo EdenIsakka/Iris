@@ -17,6 +17,7 @@ import { Text, TextInput } from '@/components/ui/text';
 import { useWallets } from '@/features/wallets/api';
 import { formatDate } from '@/lib/format-date';
 import {
+  categoryForNote,
   type Transaction,
   useCategories,
   useCreateCategory,
@@ -65,11 +66,15 @@ export function TransactionForm({ onSaved, transaction, footer, kind: initialKin
   const currency = wallets.data.find((w) => w.id === selectedWallet)?.currency ?? 'COP';
   const kindCategories = (categories.data ?? []).filter((c) => c.kind === kind);
 
+  // Movimiento nuevo sin categoría elegida: la de la última vez con esta nota ("Rappi" → Comida).
+  const suggested = () => categoryId ?? (transaction ? null : categoryForNote(note, kind));
+
   function submit() {
+    const chosen = suggested();
     const parsed = createTransactionSchema.safeParse({
       walletId: selectedWallet,
       // Si la categoría elegida se borró en "Administrar", el movimiento queda sin categoría.
-      categoryId: kindCategories.some((c) => c.id === categoryId) ? categoryId : null,
+      categoryId: kindCategories.some((c) => c.id === chosen) ? chosen : null,
       kind,
       amountMinor: amount,
       occurredAt: date.toISOString(),
@@ -207,6 +212,7 @@ export function TransactionForm({ onSaved, transaction, footer, kind: initialKin
         className={`${inputClassName} text-[17px]`}
         value={note}
         onChangeText={setNote}
+        onEndEditing={() => setCategoryId(suggested())}
         maxLength={280}
         placeholder="Ej: Mercado de la semana"
         accessibilityLabelledBy="note-label"

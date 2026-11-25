@@ -47,9 +47,10 @@ export default function RootLayout() {
             <Stack.Screen name="payments/[id]" options={modal('Pago')} />
             <Stack.Screen name="backup" options={modal('Copia de seguridad')} />
           </Stack>
+          {/* Dentro del provider: Deshacer corre como mutación. */}
+          <UndoBar />
         </QueryClientProvider>
       </ThemeProvider>
-      <UndoBar />
       <StatusBar style="auto" />
     </View>
   );

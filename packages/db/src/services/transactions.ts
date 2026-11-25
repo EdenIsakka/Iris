@@ -67,6 +67,21 @@ export function transactionsService(db: Db) {
         .all();
     },
 
+    /** Todos los movimientos del mes de Colombia que está `back` meses antes del de `now`, del más nuevo al más viejo. */
+    month(back = 0, now = new Date()) {
+      return db
+        .select()
+        .from(transactions)
+        .where(
+          and(
+            gte(transactions.occurredAt, monthStart(now, back)),
+            lt(transactions.occurredAt, monthStart(now, back - 1)),
+          ),
+        )
+        .orderBy(desc(transactions.occurredAt), desc(transactions.id))
+        .all();
+    },
+
     /** null si no existe. */
     get(id: string) {
       return db.select().from(transactions).where(eq(transactions.id, id)).get() ?? null;

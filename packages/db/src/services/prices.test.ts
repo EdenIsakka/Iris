@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { testDb } from '../test-db';
 import { investmentsService } from './investments';
-import { pricesService } from './prices';
+import { pricesService, unitsValue } from './prices';
 
 /** fetch falso: responde según la URL, sin internet. */
 const fakeFetch = (routes: Record<string, unknown>) => async (url: string) => {
@@ -38,6 +38,17 @@ const routes = {
 };
 
 describe('pricesService', () => {
+  it('da el precio de hoy para la vista previa, y null sin red', async () => {
+    const { db } = setup();
+    const btc = await pricesService(db, fakeFetch(routes)).quote('BTC', null);
+    expect(btc).toBe(400_000_000n);
+    // 0,0015 BTC a 400 millones: 600.000
+    expect(unitsValue(150_000n, btc ?? 0n)).toBe(600_000n);
+    expect(await pricesService(db, fakeFetch({})).quote('BTC', null)).toBeNull();
+    // Un fondo sin llave de Twelve Data no tiene precio.
+    expect(await pricesService(db, fakeFetch(routes)).quote('VOO', null)).toBeNull();
+  });
+
   it('el valor es unidades × precio; los fondos pasan de dólares con la TRM', async () => {
     const { db, btc, voo, itemOf } = setup();
     expect(await pricesService(db, fakeFetch(routes)).refresh('llave')).toBe(2);

@@ -1,4 +1,10 @@
-import { formatMoney, type InvestmentPeriod, PRICED, quantity } from '@finanzas/shared';
+import {
+  formatMoney,
+  type InvestmentPeriod,
+  PRICED,
+  type PriceSymbol,
+  quantity,
+} from '@finanzas/shared';
 import { Link } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
@@ -77,7 +83,7 @@ export function InvestmentDetail({ id, initialPeriod = 'month' }: Props) {
         label={investment.symbol ? '¿Cuánto pagaste? (COP)' : '¿Cuánto más metiste? (COP)'}
         button="Aportar"
         mutation={contribute}
-        withQuantity={Boolean(investment.symbol)}
+        symbol={investment.symbol}
         submit={(amount, units, onSuccess) =>
           contribute.mutate({ amountMinor: amount, quantity: units || undefined }, { onSuccess })
         }
@@ -136,23 +142,23 @@ function AmountForm({
   label,
   button,
   mutation,
-  withQuantity = false,
+  symbol,
   submit,
 }: {
   label: string;
   button: string;
   mutation: { isPending: boolean; error: Error | null };
   /** Con precio automático también pide las unidades compradas. */
-  withQuantity?: boolean;
+  symbol?: PriceSymbol | null;
   submit: (amount: string, units: string, onSuccess: () => void) => void;
 }) {
   const [amount, setAmount] = useState('');
   const [units, setUnits] = useState('');
-  const ready = Boolean(amount) && (!withQuantity || quantity.safeParse(units).success);
+  const ready = Boolean(amount) && (!symbol || quantity.safeParse(units).success);
   return (
     <View className="mt-4 gap-2">
       <AmountInput label={label} value={amount} onChangeValue={setAmount} />
-      {withQuantity ? <QuantityInput value={units} onChange={setUnits} /> : null}
+      {symbol ? <QuantityInput value={units} onChange={setUnits} symbol={symbol} /> : null}
       <FormError message={mutation.error?.message} />
       <Button
         label={mutation.isPending ? 'Guardando…' : button}

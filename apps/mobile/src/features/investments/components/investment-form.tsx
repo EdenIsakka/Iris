@@ -1,10 +1,14 @@
+import { unitsValue } from '@finanzas/db';
 import {
   createInvestmentSchema,
+  formatMoney,
   type InvestmentKind,
   investmentKind,
   PRICE_SYMBOLS,
   PRICED,
   type PriceSymbol,
+  quantity as quantitySchema,
+  toQuantityE8,
   updateInvestmentSchema,
 } from '@finanzas/shared';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -15,7 +19,7 @@ import { Chip } from '@/components/ui/chip';
 import { Button, FieldLabel, Form, FormError, inputClassName } from '@/components/ui/form';
 import { Text, TextInput } from '@/components/ui/text';
 import { formatDate, isoDate } from '@/lib/format-date';
-import { type Investment, useCreateInvestment, useUpdateInvestment } from '../api';
+import { type Investment, useCreateInvestment, useQuote, useUpdateInvestment } from '../api';
 import { KIND_LABELS } from '../format';
 
 type Props = {
@@ -174,7 +178,9 @@ export function InvestmentForm({ onSaved, investment, footer }: Props) {
       {investment ? null : (
         <>
           <AmountInput label="¿Cuánto invertiste? (COP)" value={amount} onChangeValue={setAmount} />
-          {symbol ? <QuantityInput value={quantity} onChange={setQuantity} /> : null}
+          {symbol ? (
+            <QuantityInput value={quantity} onChange={setQuantity} symbol={symbol} />
+          ) : null}
 
           <FieldLabel>¿Desde cuándo?</FieldLabel>
           <View className="flex-row flex-wrap gap-2">
@@ -226,10 +232,18 @@ export function InvestmentForm({ onSaved, investment, footer }: Props) {
 export function QuantityInput({
   value,
   onChange,
+  symbol,
 }: {
   value: string;
   onChange: (v: string) => void;
+  symbol: PriceSymbol;
 }) {
+  const price = useQuote(symbol).data;
+  // Vista previa: un "12" en vez de "0,0012" salta a la vista antes de guardar.
+  const preview =
+    price && quantitySchema.safeParse(value).success
+      ? `${value} ${symbol} valen hoy ${formatMoney(unitsValue(toQuantityE8(value), price))}`
+      : null;
   return (
     <>
       <FieldLabel nativeID="investment-quantity-label">¿Cuántas unidades compraste?</FieldLabel>
@@ -242,6 +256,7 @@ export function QuantityInput({
         maxLength={18}
         accessibilityLabelledBy="investment-quantity-label"
       />
+      {preview ? <Text className="text-[15px] font-medium text-accent">{preview}</Text> : null}
       <Text className="text-[13px] text-secondary">
         Está en el comprobante de compra. El valor se actualiza solo con el precio del día.
       </Text>

@@ -21,6 +21,8 @@ export async function unlock(promptMessage = 'Desbloquea Iris') {
   const result = await LocalAuthentication.authenticateAsync({
     promptMessage,
     cancelLabel: 'Cancelar',
+    // La cara con la cámara normal se engaña con una foto: solo huella o cara segura; si no, PIN.
+    biometricsSecurityLevel: 'strong',
   });
   return result.success;
 }

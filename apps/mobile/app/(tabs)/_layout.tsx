@@ -27,10 +27,7 @@ export default function TabsLayout() {
   return (
     <Tabs screenOptions={{ headerShown: false }}>
       <Tabs.Screen name="index" options={{ title: 'Resumen', tabBarIcon: icon('pie-chart') }} />
-      <Tabs.Screen
-        name="transactions"
-        options={{ title: 'Movimientos', tabBarIcon: icon('swap-vertical') }}
-      />
+      <Tabs.Screen name="payments" options={{ title: 'Pagos', tabBarIcon: icon('calendar') }} />
       <Tabs.Screen name="goals" options={{ title: 'Metas', tabBarIcon: icon('flag') }} />
       <Tabs.Screen
         name="investments"

@@ -1,19 +1,18 @@
-import Ionicons from '@expo/vector-icons/Ionicons';
 import { formatMoney, type InvestmentKind, type InvestmentPeriod } from '@finanzas/shared';
 import { Link } from 'expo-router';
-import type { ComponentProps } from 'react';
 import { FlatList, Pressable, View } from 'react-native';
 import { Hero, HeroTile, tabular } from '@/components/ui/hero';
 import { Text } from '@/components/ui/text';
+import { type IconName, type Ramp, TintedIcon } from '@/components/ui/tinted-icon';
 import { type Investment, useInvestments } from '../api';
 import { changeClass, formatChange, KIND_LABELS, PERIOD_CHANGE_LABELS } from '../format';
 
-const KIND_STYLES: Record<InvestmentKind, [ComponentProps<typeof Ionicons>['name'], string]> = {
-  crypto: ['logo-bitcoin', '#BA7517'],
-  stocks: ['trending-up', '#378ADD'],
-  fund: ['pie-chart', '#1D9E75'],
-  cdt: ['lock-closed', '#534AB7'],
-  other: ['briefcase', '#888780'],
+const KIND_STYLES: Record<InvestmentKind, [IconName, Ramp]> = {
+  crypto: ['logo-bitcoin', 'amber'],
+  stocks: ['trending-up', 'blue'],
+  fund: ['pie-chart', 'teal'],
+  cdt: ['lock-closed', 'purple'],
+  other: ['briefcase', 'gray'],
 };
 
 const arrow = (gain: bigint) => (gain < 0n ? 'arrow-down' : 'arrow-up');
@@ -78,7 +77,7 @@ export function InvestmentList({ period }: { period: InvestmentPeriod }) {
 type RowProps = { item: Investment; period: InvestmentPeriod; first: boolean; last: boolean };
 
 function InvestmentRow({ item, period, first, last }: RowProps) {
-  const [icon, color] = KIND_STYLES[item.kind];
+  const [icon, ramp] = KIND_STYLES[item.kind];
   return (
     <Link href={{ pathname: '/investments/[id]', params: { id: item.id, period } }} asChild>
       <Pressable
@@ -88,12 +87,7 @@ function InvestmentRow({ item, period, first, last }: RowProps) {
         accessibilityRole="button"
         accessibilityHint="Abre el detalle para actualizar el valor o aportar"
       >
-        <View
-          className="h-9 w-9 items-center justify-center rounded-full"
-          style={{ backgroundColor: color }}
-        >
-          <Ionicons name={icon} size={18} color="#FFFFFF" />
-        </View>
+        <TintedIcon icon={icon} ramp={ramp} />
         <View className="flex-1">
           <Text className="text-[17px]" numberOfLines={1}>
             {item.name}

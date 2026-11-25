@@ -94,9 +94,16 @@ export function TransactionList() {
   );
 }
 
-type RowProps = { item: Transaction; category: string | undefined; first: boolean; last: boolean };
+type RowProps = {
+  item: Transaction;
+  category: string | undefined;
+  first: boolean;
+  last: boolean;
+  /** Dentro de una Card (Resumen): sin fondo ni bordes redondeados propios. */
+  inCard?: boolean;
+};
 
-function TransactionRow({ item, category, first, last }: RowProps) {
+export function TransactionRow({ item, category, first, last, inCard }: RowProps) {
   const income = item.kind === 'income';
   const fallback = income ? 'Ingreso' : 'Gasto';
   // Con nota: la nota arriba y la categoría abajo. Sin nota: la categoría es el título.
@@ -105,9 +112,9 @@ function TransactionRow({ item, category, first, last }: RowProps) {
   return (
     <Link href={{ pathname: '/transactions/[id]', params: { id: item.id } }} asChild>
       <Pressable
-        className={`min-h-[56px] flex-row items-center justify-between bg-card px-4 py-2 active:opacity-60 ${
-          first ? 'rounded-t-3xl' : 'border-t border-separator'
-        } ${last ? 'rounded-b-3xl' : ''}`}
+        className={`min-h-[56px] flex-row items-center justify-between py-2 active:opacity-60 ${
+          first ? '' : 'border-t border-separator'
+        } ${inCard ? '' : `bg-card px-4 ${first ? 'rounded-t-3xl' : ''} ${last ? 'rounded-b-3xl' : ''}`}`}
         accessibilityRole="button"
         accessibilityHint="Abre el movimiento para editarlo o borrarlo"
       >

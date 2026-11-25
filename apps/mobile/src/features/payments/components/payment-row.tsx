@@ -1,6 +1,7 @@
 import { formatMoney } from '@finanzas/shared';
 import { View } from 'react-native';
 import { Text } from '@/components/ui/text';
+import { TintedIcon } from '@/components/ui/tinted-icon';
 import { formatDate, isoDate } from '@/lib/format-date';
 import type { Payment } from '../api';
 
@@ -21,20 +22,23 @@ export function PaymentRow({ payment: p }: { payment: Payment }) {
   const money = (v: bigint) => formatMoney(v, p.currency);
   const enough = p.leftMinor >= 0n;
   return (
-    <View className="flex-1 gap-0.5 py-2">
-      <View className="flex-row justify-between gap-2">
-        <Text className="flex-1 text-[15px] font-medium" numberOfLines={1}>
-          {p.name}
+    <View className="flex-1 flex-row items-center gap-3 py-2">
+      <TintedIcon icon="calendar" ramp={enough ? 'purple' : 'red'} />
+      <View className="flex-1 gap-0.5">
+        <View className="flex-row justify-between gap-2">
+          <Text className="flex-1 text-[15px] font-medium" numberOfLines={1}>
+            {p.name}
+          </Text>
+          <Text className="text-[15px]">{money(p.amountMinor)}</Text>
+        </View>
+        <Text className={`text-[13px] ${label === 'Vencido' ? 'text-negative' : 'text-secondary'}`}>
+          {label}
+          {p.repeat === 'monthly' ? ' · cada mes' : ''} · {p.walletName}
         </Text>
-        <Text className="text-[15px]">{money(p.amountMinor)}</Text>
+        <Text className={`text-[13px] font-medium ${enough ? 'text-positive' : 'text-negative'}`}>
+          {enough ? `Te quedarían ${money(p.leftMinor)}` : `Te faltan ${money(-p.leftMinor)}`}
+        </Text>
       </View>
-      <Text className={`text-[13px] ${label === 'Vencido' ? 'text-negative' : 'text-secondary'}`}>
-        {label}
-        {p.repeat === 'monthly' ? ' · cada mes' : ''} · {p.walletName}
-      </Text>
-      <Text className={`text-[13px] font-medium ${enough ? 'text-positive' : 'text-negative'}`}>
-        {enough ? `Te quedarían ${money(p.leftMinor)}` : `Te faltan ${money(-p.leftMinor)}`}
-      </Text>
     </View>
   );
 }

@@ -29,7 +29,21 @@ export function ThemeMenu() {
         accessibilityLabel="Apariencia"
         accessibilityHint="Elige modo claro, oscuro o el del teléfono"
       >
-        <Ionicons name="contrast-outline" size={22} color={colors.secondary} />
+        {/* Sol y luna juntos: no hay un ícono así en Ionicons. */}
+        <View className="h-7 w-7">
+          <Ionicons
+            name="sunny"
+            size={17}
+            color={colors.secondary}
+            style={{ position: 'absolute', left: 0, top: 0 }}
+          />
+          <Ionicons
+            name="moon"
+            size={13}
+            color={colors.secondary}
+            style={{ position: 'absolute', right: 0, bottom: 1 }}
+          />
+        </View>
       </Pressable>
 
       <Modal visible={open} transparent animationType="fade" onRequestClose={() => setOpen(false)}>

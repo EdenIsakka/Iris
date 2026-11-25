@@ -116,6 +116,12 @@ export function restoreTransaction(t: Transaction) {
   refreshAfterTransaction(queryClient);
 }
 
+/** Borra sin mutación de por medio. Para el "Deshacer" de Repetir. */
+export function removeTransaction(id: string) {
+  if (!transactions.remove(id)) throw new Error('Este movimiento ya no existe.');
+  refreshAfterTransaction(queryClient);
+}
+
 export function useCategories() {
   return useQuery({ queryKey: categoryKeys.all, queryFn: () => categories.list() });
 }

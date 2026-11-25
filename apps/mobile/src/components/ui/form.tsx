@@ -72,13 +72,15 @@ type ButtonProps = {
   disabled?: boolean;
   /** Botón destructivo: texto rojo sobre la tarjeta, como "Borrar" en iOS. */
   destructive?: boolean;
+  /** Acción secundaria: texto violeta sobre la tarjeta. */
+  secondary?: boolean;
 };
 
-export function Button({ label, onPress, disabled, destructive }: ButtonProps) {
+export function Button({ label, onPress, disabled, destructive, secondary }: ButtonProps) {
   return (
     <Pressable
       className={`min-h-[52px] items-center justify-center rounded-2xl active:opacity-80 ${
-        destructive ? 'mt-1 bg-card' : 'mt-4 bg-accent'
+        destructive || secondary ? 'mt-1 bg-card' : 'mt-4 bg-accent'
       } ${disabled ? 'opacity-50' : ''}`}
       onPress={onPress}
       disabled={disabled}
@@ -86,7 +88,9 @@ export function Button({ label, onPress, disabled, destructive }: ButtonProps) {
       accessibilityState={{ disabled: !!disabled }}
     >
       <Text
-        className={`text-[17px] font-semibold ${destructive ? 'text-negative' : 'text-on-accent'}`}
+        className={`text-[17px] font-semibold ${
+          destructive ? 'text-negative' : secondary ? 'text-accent' : 'text-on-accent'
+        }`}
       >
         {label}
       </Text>

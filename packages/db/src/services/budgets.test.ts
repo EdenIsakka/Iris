@@ -33,7 +33,14 @@ describe('budgetsService', () => {
     spend('30000', '2026-11-10T12:00:00Z');
     spend('99000', '2020-01-15T12:00:00Z');
     expect(service.list(now)).toEqual([
-      { categoryId: food, name: 'Comida', limitMinor: 80000n, spentMinor: 30000n },
+      // Quedan 50.000 para los 16 días del 15 al 30 de noviembre.
+      {
+        categoryId: food,
+        name: 'Comida',
+        limitMinor: 80000n,
+        spentMinor: 30000n,
+        perDayMinor: 3125n,
+      },
     ]);
   });
 

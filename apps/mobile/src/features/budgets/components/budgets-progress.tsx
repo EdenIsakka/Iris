@@ -39,7 +39,7 @@ function BudgetRow({ budget }: { budget: Budget }) {
   const status =
     spent > limit
       ? `Te pasaste por ${formatMoney(spent - limit)}`
-      : `Quedan ${formatMoney(limit - spent)}`;
+      : `Quedan ${formatMoney(limit - spent)} · ${formatMoney(budget.perDayMinor)} por día`;
 
   return (
     <View className="flex-row items-center gap-3 py-2">

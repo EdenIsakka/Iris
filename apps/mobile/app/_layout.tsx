@@ -3,6 +3,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { Stack, ThemeProvider } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useColorScheme, View } from 'react-native';
+import { UndoBar } from '@/components/ui/undo-bar';
 import { watchPayments } from '@/features/payments/api';
 import { loadColorScheme } from '@/lib/color-scheme';
 import { queryClient } from '@/lib/query-client';
@@ -46,6 +47,8 @@ export default function RootLayout() {
             <Stack.Screen name="payments/[id]" options={modal('Pago')} />
             <Stack.Screen name="backup" options={modal('Copia de seguridad')} />
           </Stack>
+          {/* Dentro del provider: Deshacer corre como mutación. */}
+          <UndoBar />
         </QueryClientProvider>
       </ThemeProvider>
       <StatusBar style="auto" />

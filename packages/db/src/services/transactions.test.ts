@@ -21,6 +21,17 @@ function setup() {
 }
 
 describe('transactionsService', () => {
+  it('trae solo los movimientos del mes pedido, en hora de Colombia', () => {
+    const { moves, add } = setup();
+    const now = new Date('2026-11-15T12:00:00Z');
+    add('1', '2026-11-01T04:59:00Z'); // 31 de octubre, 11:59 p. m. en Colombia
+    add('2', '2026-11-01T05:00:00Z'); // 1 de noviembre a medianoche
+    add('3', '2026-11-20T12:00:00Z');
+    add('4', '2026-12-01T05:00:00Z'); // ya es diciembre
+    expect(moves.month(0, now).map((t) => t.amountMinor)).toEqual([3n, 2n]);
+    expect(moves.month(1, now).map((t) => t.amountMinor)).toEqual([1n]);
+  });
+
   it('toma la moneda de la billetera', () => {
     const { add } = setup();
     expect(add('100', '2026-11-10T12:00:00Z')?.currency).toBe('COP');

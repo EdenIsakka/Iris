@@ -7,6 +7,7 @@ import {
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { walletKeys } from '@/features/wallets/api';
 import { db } from '@/lib/db';
+import { queryClient } from '@/lib/query-client';
 
 const transactions = transactionsService(db);
 const categories = categoriesService(db);
@@ -39,6 +40,14 @@ export function useTransactions() {
 
 export function useTransaction(id: string) {
   return useQuery({ queryKey: [...transactionKeys.all, id], queryFn: () => transactions.get(id) });
+}
+
+/** Todos los movimientos del mes que está `back` meses atrás (0 = este mes). */
+export function useMonthTransactions(back: number) {
+  return useQuery({
+    queryKey: [...transactionKeys.all, 'month', back],
+    queryFn: () => transactions.month(back),
+  });
 }
 
 export type Transaction = NonNullable<ReturnType<typeof transactions.get>>;
@@ -91,6 +100,20 @@ export function useDeleteTransaction() {
     },
     onSuccess: () => refreshAfterTransaction(queryClient),
   });
+}
+
+/** Vuelve a crear un movimiento borrado (con otro id). Para el "Deshacer". */
+export function restoreTransaction(t: Transaction) {
+  const created = transactions.create({
+    walletId: t.walletId,
+    categoryId: t.categoryId,
+    kind: t.kind,
+    amountMinor: t.amountMinor.toString(),
+    occurredAt: t.occurredAt.toISOString(),
+    note: t.note ?? undefined,
+  });
+  if (!created) throw new Error('La billetera de este movimiento ya no existe.');
+  refreshAfterTransaction(queryClient);
 }
 
 export function useCategories() {

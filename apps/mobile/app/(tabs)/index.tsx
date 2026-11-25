@@ -4,6 +4,7 @@ import { Pressable, ScrollView } from 'react-native';
 import { QuickActions } from '@/components/quick-actions';
 import { Screen } from '@/components/ui/screen';
 import { Text } from '@/components/ui/text';
+import { InsightsCard } from '@/features/insights/insights-card';
 import { MonthSummary } from '@/features/transactions/components/month-summary';
 import { MonthlyChart } from '@/features/transactions/components/monthly-chart';
 import { RecentTransactions } from '@/features/transactions/components/recent-transactions';
@@ -28,6 +29,7 @@ export default function DashboardScreen() {
       <ScrollView className="-mx-4" contentContainerClassName="gap-6 px-4 pb-4">
         <BalanceHero />
         <QuickActions />
+        <InsightsCard />
         <WalletsSummary />
         <RecentTransactions />
         <MonthSummary />

@@ -1,7 +1,7 @@
 import { setBudgetSchema } from '@finanzas/shared';
 import { and, desc, eq, gte, lte, sql } from 'drizzle-orm';
 import type { Db } from '../db';
-import { monthKey, monthStart } from '../month';
+import { dayOfMonth, monthKey, monthStart } from '../month';
 import { budgets, categories, transactions } from '../schema';
 import { inCop } from './trm';
 
@@ -29,7 +29,10 @@ export function budgetsService(db: Db) {
   }
 
   return {
-    /** Topes vigentes este mes con lo gastado en cada categoría, por nombre. */
+    /**
+     * Topes vigentes este mes con lo gastado en cada categoría, por nombre, y cuánto se puede
+     * gastar por día de aquí a fin de mes (hoy cuenta).
+     */
     list(now = new Date()) {
       const rows = db
         .select({
@@ -57,12 +60,15 @@ export function budgetsService(db: Db) {
         .where(and(eq(transactions.kind, 'expense'), gte(transactions.occurredAt, monthStart(now))))
         .groupBy(transactions.categoryId)
         .all();
+      const { day, days } = dayOfMonth(now);
+      const daysLeft = BigInt(days - day + 1);
       return [...latest.values()]
         .filter((b) => b.limitMinor > 0n)
-        .map((b) => ({
-          ...b,
-          spentMinor: spent.find((s) => s.categoryId === b.categoryId)?.total ?? 0n,
-        }))
+        .map((b) => {
+          const spentMinor = spent.find((s) => s.categoryId === b.categoryId)?.total ?? 0n;
+          const left = b.limitMinor - spentMinor;
+          return { ...b, spentMinor, perDayMinor: left > 0n ? left / daysLeft : 0n };
+        })
         .sort((a, b) => a.name.localeCompare(b.name));
     },
 

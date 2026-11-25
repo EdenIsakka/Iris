@@ -14,3 +14,10 @@ export function monthStart(now = new Date(), back = 0) {
 export function monthKey(date: Date) {
   return new Date(date.getTime() - BOGOTA_OFFSET_MS).toISOString().slice(0, 7);
 }
+
+/** Día del mes de Colombia en que cae `now` y cuántos días tiene ese mes. */
+export function dayOfMonth(now = new Date()) {
+  const local = new Date(now.getTime() - BOGOTA_OFFSET_MS);
+  const days = new Date(Date.UTC(local.getUTCFullYear(), local.getUTCMonth() + 1, 0)).getUTCDate();
+  return { day: local.getUTCDate(), days };
+}

@@ -3,7 +3,7 @@ import {
   createTransactionSchema,
   TRANSACTIONS_PAGE_SIZE,
 } from '@finanzas/shared';
-import { and, desc, eq, gte, sql } from 'drizzle-orm';
+import { and, desc, eq, gte, lt, sql } from 'drizzle-orm';
 import type { Db } from '../db';
 import { BOGOTA_OFFSET_MS, monthKey, monthStart } from '../month';
 import { categories, transactions, wallets } from '../schema';
@@ -67,6 +67,21 @@ export function transactionsService(db: Db) {
         .all();
     },
 
+    /** Todos los movimientos del mes de Colombia que está `back` meses antes del de `now`, del más nuevo al más viejo. */
+    month(back = 0, now = new Date()) {
+      return db
+        .select()
+        .from(transactions)
+        .where(
+          and(
+            gte(transactions.occurredAt, monthStart(now, back)),
+            lt(transactions.occurredAt, monthStart(now, back - 1)),
+          ),
+        )
+        .orderBy(desc(transactions.occurredAt), desc(transactions.id))
+        .all();
+    },
+
     /** null si no existe. */
     get(id: string) {
       return db.select().from(transactions).where(eq(transactions.id, id)).get() ?? null;
@@ -87,9 +102,15 @@ export function transactionsService(db: Db) {
       );
     },
 
-    /** Ingresos, gastos y gastos por categoría del mes en curso (hora de Colombia). */
-    monthSummary(now = new Date()) {
-      const thisMonth = gte(transactions.occurredAt, monthStart(now));
+    /**
+     * Ingresos, gastos y gastos por categoría del mes en curso (hora de Colombia), o del que está
+     * `back` meses antes.
+     */
+    monthSummary(now = new Date(), back = 0) {
+      const thisMonth = and(
+        gte(transactions.occurredAt, monthStart(now, back)),
+        back ? lt(transactions.occurredAt, monthStart(now, back - 1)) : undefined,
+      );
       const byKind = db
         .select({ kind: transactions.kind, total: total() })
         .from(transactions)

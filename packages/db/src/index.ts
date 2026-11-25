@@ -5,6 +5,7 @@ export { type Backup, backupService } from './services/backup';
 export { budgetsService } from './services/budgets';
 export { categoriesService } from './services/categories';
 export { goalsService } from './services/goals';
+export { type Insight, insightsService } from './services/insights';
 export type { InvestmentStats } from './services/investment-stats';
 export { investmentsService } from './services/investments';
 export { paymentsService } from './services/payments';

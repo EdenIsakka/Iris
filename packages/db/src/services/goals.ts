@@ -2,6 +2,7 @@ import { amountMinor, type CreateGoalInput, createGoalSchema } from '@finanzas/s
 import { and, eq, sql } from 'drizzle-orm';
 import type { Db } from '../db';
 import { goalContributions, goals } from '../schema';
+import { bogotaDay } from './trm';
 
 export function goalsService(db: Db) {
   const savedOf = (goalId: string) =>
@@ -14,9 +15,13 @@ export function goalsService(db: Db) {
       .get()?.total ?? 0n;
 
   return {
-    /** Cada meta con su progreso (suma de aportes). */
-    list() {
-      return db
+    /**
+     * Cada meta con su progreso (suma de aportes). Con fecha y sin cumplir, también cuánto ahorrar
+     * al mes para llegar: contando el mes en curso y el de la fecha. Fecha ya pasada: `late`.
+     */
+    list(now = new Date()) {
+      const today = bogotaDay(now);
+      const rows = db
         .select({
           id: goals.id,
           name: goals.name,
@@ -32,6 +37,16 @@ export function goalsService(db: Db) {
         .leftJoin(goalContributions, eq(goalContributions.goalId, goals.id))
         .groupBy(goals.id)
         .all();
+      return rows.map((g) => {
+        if (!g.deadline || g.status === 'completed')
+          return { ...g, late: false, perMonthMinor: null };
+        if (g.deadline < today) return { ...g, late: true, perMonthMinor: null };
+        const month = (iso: string) => Number(iso.slice(0, 4)) * 12 + Number(iso.slice(5, 7));
+        const months = BigInt(month(g.deadline) - month(today) + 1);
+        const left = g.targetMinor - g.savedMinor;
+        // Redondea hacia arriba: con lo justo por mes se llega a tiempo.
+        return { ...g, late: false, perMonthMinor: (left + months - 1n) / months };
+      });
     },
 
     create(raw: CreateGoalInput) {

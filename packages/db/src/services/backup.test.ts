@@ -60,6 +60,11 @@ describe('backupService', () => {
     const wallets = good.tables.wallets?.map((w) => ({ ...w, opening_balance_minor: 1.5 }));
     const decimal = { ...good, tables: { ...good.tables, wallets } };
     expect(() => backup.importData(decimal)).toThrow('no es una copia');
+    // Una moneda que la app no conoce la haría caer al mostrar la billetera.
+    const euros = good.tables.wallets?.map((w) => ({ ...w, currency: 'EUR' }));
+    expect(() =>
+      backup.importData({ ...good, tables: { ...good.tables, wallets: euros } }),
+    ).toThrow('no es una copia');
     // Una transacción apunta a una billetera que no está: falla a mitad y se deshace.
     const broken = { ...good, tables: { ...good.tables, wallets: [] } };
     expect(() => backup.importData(broken)).toThrow('no es una copia');

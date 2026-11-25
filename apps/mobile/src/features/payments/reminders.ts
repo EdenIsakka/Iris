@@ -1,6 +1,7 @@
 import { formatMoney } from '@finanzas/shared';
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
+import { isLockOn } from '@/lib/lock';
 
 const CHANNEL = 'pagos';
 
@@ -52,6 +53,8 @@ export function reminderText(p: Reminder) {
   };
 }
 
+const LOCKED_TEXT = { title: 'Mañana tienes un pago', body: 'Abre Iris para ver si te alcanza.' };
+
 /**
  * Borra los avisos y programa uno por pago, el día antes a las 9 a. m. Se llama cada vez que
  * algo cambia en la app, así el texto siempre trae el saldo de ahora.
@@ -60,12 +63,14 @@ export async function scheduleReminders(payments: Reminder[], now = new Date()) 
   await Notifications.cancelAllScheduledNotificationsAsync();
   // Pide permiso y crea el canal también cuando los pagos llegaron por una copia restaurada.
   if (!payments.length || !(await askReminderPermission())) return;
+  // Con bloqueo, el aviso no dice montos: se ve en la pantalla bloqueada del celular.
+  const locked = await isLockOn();
   for (const p of payments) {
     const date = new Date(`${p.dueDate}T09:00:00`);
     date.setDate(date.getDate() - 1);
     if (date <= now) continue;
     await Notifications.scheduleNotificationAsync({
-      content: reminderText(p),
+      content: locked ? LOCKED_TEXT : reminderText(p),
       trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date, channelId: CHANNEL },
     });
   }
